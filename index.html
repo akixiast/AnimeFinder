@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnimeFinder - Discover Your Next Favorite Anime</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-primary: #6366f1;
+            --color-secondary: #ec4899;
+            --color-dark: #111827;
+        }
+        
+        /* Card Animations */
+        .anime-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .anime-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+        }
+        
+        /* Loader */
+        .loader {
+            border: 4px solid #374151;
+            border-radius: 50%;
+            border-top: 4px solid #6366f1;
+            width: 50px;
+            height: 50px;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Fade In */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        @keyframes fadeIn {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Gradient Animation */
+        .gradient-animate {
+            background-size: 200% 200%;
+            animation: gradient 8s ease infinite;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Scrollbar Styling */
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #1f2937;
+            border-radius: 10px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 10px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: #6366f1;
+        }
+        
+        /* Quiz Option Hover */
+        .quiz-option {
+            position: relative;
+            overflow: hidden;
+        }
+        .quiz-option:before {
+            content: '';
+            position: absolute;
+            left: -100%;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        .quiz-option:hover:before {
+            left: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
+
+    <!-- Navigation -->
+    <nav class="bg-gray-800/50 backdrop-blur-md fixed w-full z-50 border-b border-gray-700">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="#" onclick="navigate('home')" class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-pink-500">AnimeFinder</a>
+            <div class="hidden md:flex space-x-6">
+                <button onclick="navigate('home')" class="hover:text-indigo-400 transition">Home</button>
+                <button onclick="navigate('quiz')" class="hover:text-indigo-400 transition">Quiz</button>
+                <button onclick="navigate('browse')" class="hover:text-indigo-400 transition">Browse</button>
+                <button onclick="surpriseMe()" class="hover:text-pink-400 transition">Surprise Me</button>
+            </div>
+            <button class="md:hidden text-gray-300" onclick="toggleMobileMenu()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-800 border-t border-gray-700 p-4 space-y-2">
+            <button onclick="navigate('home'); toggleMobileMenu()" class="block w-full text-left py-2">Home</button>
+            <button onclick="navigate('quiz'); toggleMobileMenu()" class="block w-full text-left py-2">Quiz</button>
+            <button onclick="navigate('browse'); toggleMobileMenu()" class="block w-full text-left py-2">Browse</button>
+            <button onclick="surpriseMe(); toggleMobileMenu()" class="block w-full text-left py-2 text-pink-400">Surprise Me</button>
+        </div>
+    </nav>
+
+    <main id="app" class="pt-20 container mx-auto px-4 pb-12 min-h-screen">
+        <!-- Content will be injected here by JavaScript -->
+    </main>
+
+    <footer class="bg-gray-800 border-t border-gray-700 py-6 text-center text-gray-400 text-sm">
+        <p>Powered by <a href="https://anilist.co/" target="_blank" class="text-indigo-400 hover:underline">AniList API</a></p>
+        <p class="mt-2">&copy; 2024 AnimeFinder. All rights reserved.</p>
+    </footer>
+
+    <div id="modal-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div id="modal-content" class="bg-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700 transform scale-95 transition-transform duration-300 scrollbar-thin">
+        </div>
+    </div>
+
+    <div id="surprise-settings-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div id="surprise-settings-content" class="bg-gray-800 rounded-xl max-w-lg w-full shadow-2xl border border-gray-700 transform scale-95 transition-transform duration-300">
+        </div>
+    </div>
+
+    <script>
+        const ANILIST_API = 'https://graphql.anilist.co';
+        
+        const state = {
+            currentPage: 'home',
+            quiz: { currentStep: 0, answers: [] },
+            browse: {
+                page: 1,
+                search: '',
+                genre: '',
+                format: '',
+                status: '',
+                sort: 'POPULARITY_DESC',
+                minScore: '',
+                year: ''
+            },
+            surprise: {
+                genre: '',
+                format: '',
+                minScore: '70',
+                year: ''
+            },
+            genres: ['Action', 'Adventure', 'Comedy', 'Drama', 'Ecchi', 'Fantasy', 'Horror', 'Mahou Shoujo', 'Mecha', 'Music', 'Mystery', 'Psychological', 'Romance', 'Sci-Fi', 'Slice of Life', 'Sports', 'Supernatural', 'Thriller']
+        };
+
+        async function anilistQuery(query, variables = {}) {
+            const response = await fetch(ANILIST_API, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ query, variables })
+            });
+            const data = await response.json();
+            return data.data;
+        }
+
+        const views = {
+            home: () => `
+                <div class="flex flex-col items-center justify-center min-h-[80vh] text-center fade-in">
+                    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 gradient-animate">
+                        Find Your Next Obsession
+                    </h1>
+                    <p class="text-xl text-gray-300 mb-12 max-w-2xl leading-relaxed">
+                        Not sure what to watch next? Take our personalized quiz, browse our extensive collection, or let fate decide.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
+                        <div onclick="navigate('quiz')" class="group cursor-pointer bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-2xl p-8 transition-all hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/20">
+                            <div class="text-4xl mb-4">📝</div>
+                            <h3 class="text-2xl font-bold mb-2 text-white group-hover:text-indigo-400 transition">Take the Quiz</h3>
+                            <p class="text-gray-400">Answer 5 simple questions to get personalized recommendations.</p>
+                        </div>
+
+                        <div onclick="navigate('browse')" class="group cursor-pointer bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-2xl p-8 transition-all hover:border-purple-500 hover:shadow-lg hover:shadow-purple-500/20">
+                            <div class="text-4xl mb-4">🔍</div>
+                            <h3 class="text-2xl font-bold mb-2 text-white group-hover:text-purple-400 transition">Browse Anime</h3>
+                            <p class="text-gray-400">Search through thousands of anime with filters and genres.</p>
+                        </div>
+
+                        <div class="group cursor-pointer bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-2xl p-8 transition-all hover:border-pink-500 hover:shadow-lg hover:shadow-pink-500/20 relative">
+                            <button onclick="event.stopPropagation(); openSurpriseSettings()" class="absolute top-4 right-4 p-2 bg-gray-700 hover:bg-pink-600 rounded-full transition-all z-10 group/gear">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300 group-hover/gear:text-white group-hover/gear:rotate-90 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </button>
+                            <div onclick="surpriseMe()">
+                                <div class="text-4xl mb-4">🎲</div>
+                                <h3 class="text-2xl font-bold mb-2 text-white group-hover:text-pink-400 transition">Surprise Me</h3>
+                                <p class="text-gray-400">Feeling adventurous? Let us pick a random top-rated anime for you.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-12">
+                    <h2 class="text-2xl font-bold mb-6 px-2 border-l-4 border-indigo-500">Top Trending Now</h2>
+                    <div id="top-airing-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        ${getLoaderHtml()}
+                    </div>
+                </div>
+            `,
+            quiz: () => {
+                const questions = [
+                    {
+                        id: 1,
+                        text: "What is your preferred mood?",
+                        options: [
+                            { label: "Action & Adrenaline", value: "Action" },
+                            { label: "Laugh out loud", value: "Comedy" },
+                            { label: "Emotional & Dramatic", value: "Drama" },
+                            { label: "Dark & Mysterious", value: "Mystery" }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        text: "Pick a setting:",
+                        options: [
+                            { label: "Fantasy World", value: "Fantasy" },
+                            { label: "Sci-Fi / Future", value: "Sci-Fi" },
+                            { label: "School Life", value: "Slice of Life" },
+                            { label: "Supernatural", value: "Supernatural" }
+                        ]
+                    },
+                    {
+                        id: 3,
+                        text: "Who do you want as a protagonist?",
+                        options: [
+                            { label: "Overpowered Hero", value: "Action" },
+                            { label: "Underdog", value: "Drama" },
+                            { label: "Team of Friends", value: "Adventure" },
+                            { label: "Anti-hero", value: "Psychological" }
+                        ]
+                    },
+                    {
+                        id: 4,
+                        text: "Preferred format?",
+                        options: [
+                            { label: "TV Series", value: "TV" },
+                            { label: "Movie", value: "MOVIE" },
+                            { label: "Short (OVA/ONA)", value: "OVA" },
+                            { label: "Any", value: "any" }
+                        ]
+                    },
+                    {
+                        id: 5,
+                        text: "Animation preference?",
+                        options: [
+                            { label: "Modern (2020+)", value: "modern" },
+                            { label: "2010s Era", value: "2010s" },
+                            { label: "Classic (pre-2010)", value: "classic" },
+                            { label: "Don't care", value: "any" }
+                        ]
+                    }
+                ];
+
+                if (state.quiz.currentStep >= questions.length) {
+                    return `
+                        <div class="flex flex-col items-center fade-in">
+                            <h2 class="text-3xl font-bold mb-8">We found these for you!</h2>
+                            <div id="quiz-results" class="grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
+                                ${getLoaderHtml()}
+                            </div>
+                            <button onclick="resetQuiz()" class="mt-10 px-8 py-3 bg-gray-700 hover:bg-gray-600 rounded-full transition">Retake Quiz</button>
+                        </div>
+                    `;
+                }
+
+                const q = questions[state.quiz.currentStep];
+                return `
+                    <div class="max-w-2xl mx-auto mt-10 fade-in bg-gray-800 border border-gray-700 p-8 rounded-2xl shadow-xl">
+                        <div class="flex justify-between text-sm text-gray-400 mb-6">
+                            <span>Question ${state.quiz.currentStep + 1} of ${questions.length}</span>
+                            <span>${Math.round(((state.quiz.currentStep)/questions.length)*100)}% Complete</span>
+                        </div>
+                        <div class="w-full bg-gray-700 h-2 rounded-full mb-8">
+                            <div class="bg-indigo-500 h-2 rounded-full transition-all duration-500" style="width: ${((state.quiz.currentStep)/questions.length)*100}%"></div>
+                        </div>
+                        
+                        <h2 class="text-3xl font-bold mb-8">${q.text}</h2>
+                        
+                        <div class="grid grid-cols-1 gap-4">
+                            ${q.options.map(opt => `
+                                <button onclick="handleQuizAnswer('${opt.value}')" class="quiz-option text-left p-5 rounded-xl bg-gray-700 hover:bg-indigo-600 transition-all duration-300 flex justify-between items-center group shadow-md hover:shadow-xl hover:scale-[1.02]">
+                                    <span class="font-medium text-lg relative z-10">${opt.label}</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            },
+            browse: () => `
+                <div class="fade-in">
+                    <h2 class="text-3xl font-bold mb-6">Browse Anime</h2>
+                    
+                    <div class="relative mb-4">
+                        <input type="text" id="search-input" placeholder="Search by title..." class="bg-gray-800 border border-gray-700 text-white rounded-lg pl-12 pr-4 py-4 w-full focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all" onkeyup="debounceSearch(event)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute left-4 top-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        ${state.browse.search ? '<button onclick="clearSearch()" class="absolute right-3 top-3 bg-gray-700 hover:bg-gray-600 rounded-full p-1.5 transition">×</button>' : ''}
+                    </div>
+                    
+                    <button onclick="toggleFilters()" class="mb-4 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition-all flex items-center gap-2 text-sm font-medium">
+                        <span id="filter-toggle-text">Show Advanced Filters</span>
+                        <span id="active-filters-count" class="hidden ml-2 px-2 py-0.5 bg-indigo-600 rounded-full text-xs">0</span>
+                    </button>
+                    
+                    <div id="advanced-filters" class="hidden bg-gray-800 border border-gray-700 rounded-xl p-6 mb-6 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Genre</label>
+                                <select id="genre-filter" onchange="handleFilterChange()" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
+                                    <option value="">All Genres</option>
+                                    ${state.genres.map(g => `<option value="${g}">${g}</option>`).join('')}
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Format</label>
+                                <select id="format-filter" onchange="handleFilterChange()" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
+                                    <option value="">All Formats</option>
+                                    <option value="TV">TV Series</option>
+                                    <option value="MOVIE">Movie</option>
+                                    <option value="OVA">OVA</option>
+                                    <option value="ONA">ONA</option>
+                                    <option value="SPECIAL">Special</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Status</label>
+                                <select id="status-filter" onchange="handleFilterChange()" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
+                                    <option value="">All Status</option>
+                                    <option value="RELEASING">Currently Airing</option>
+                                    <option value="FINISHED">Completed</option>
+                                    <option value="NOT_YET_RELEASED">Upcoming</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Min Score</label>
+                                <select id="score-filter" onchange="handleFilterChange()" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
+                                    <option value="">Any Score</option>
+                                    <option value="90">90+ (Masterpiece)</option>
+                                    <option value="80">80+ (Excellent)</option>
+                                    <option value="70">70+ (Good)</option>
+                                    <option value="60">60+ (Fine)</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Year</label>
+                                <input type="number" id="year-filter" placeholder="e.g., 2023" min="1960" max="2025" onchange="handleFilterChange()" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-gray-700 pt-4">
+                            <label class="block text-sm font-medium text-gray-400 mb-3">Sort By</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <button onclick="setSortOption('POPULARITY_DESC')" id="sort-popularity" class="sort-btn px-4 py-3 bg-indigo-600 border border-indigo-500 rounded-lg transition-all text-sm font-medium">Most Popular</button>
+                                <button onclick="setSortOption('SCORE_DESC')" id="sort-score" class="sort-btn px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg transition-all text-sm font-medium">Top Rated</button>
+                                <button onclick="setSortOption('START_DATE_DESC')" id="sort-date" class="sort-btn px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg transition-all text-sm font-medium">Newest</button>
+                                <button onclick="setSortOption('TITLE_ROMAJI')" id="sort-title" class="sort-btn px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg transition-all text-sm font-medium">A-Z</button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end gap-3 pt-4 border-t border-gray-700">
+                            <button onclick="clearAllFilters()" class="px-6 py-2 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-lg transition-all text-sm font-medium">Clear All Filters</button>
+                            <button onclick="toggleFilters()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all text-sm font-medium">Apply Filters</button>
+                        </div>
+                    </div>
+                    
+                    <div id="results-info" class="mb-4 flex flex-wrap items-center gap-2 text-sm text-gray-400"></div>
+                    
+                    <div id="browse-results" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                        ${getLoaderHtml()}
+                    </div>
+                    
+                    <div class="flex justify-center items-center mt-10 gap-4">
+                        <button onclick="changePage(-1)" id="prev-page" class="px-6 py-3 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 hover:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium">
+                            <span class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Previous
+                            </span>
+                        </button>
+                        <span id="page-indicator" class="px-6 py-3 bg-gray-800 border border-gray-700 rounded-lg font-bold text-indigo-400">Page 1</span>
+                        <button onclick="changePage(1)" id="next-page" class="px-6 py-3 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 hover:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium">
+                            <span class="flex items-center gap-2">
+                                Next
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            `
+        };
+
+        async function init() {
+            navigate('home');
+            loadTopAnime();
+        }
+
+        function navigate(page) {
+            state.currentPage = page;
+            document.getElementById('app').innerHTML = views[page]();
+            
+            if (page === 'home') loadTopAnime();
+            else if (page === 'browse') loadBrowseData();
+            else if (page === 'quiz' && state.quiz.currentStep >= 5) fetchQuizResults();
+            
+            window.scrollTo(0, 0);
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        function getLoaderHtml() {
+            return '<div class="col-span-full flex justify-center py-20"><div class="loader"></div></div>';
+        }
+
+        function createAnimeCard(anime) {
+            const title = anime.title?.english || anime.title?.romaji || 'Unknown';
+            const image = anime.coverImage?.large || anime.coverImage?.medium;
+            const score = anime.averageScore ? `⭐ ${(anime.averageScore / 10).toFixed(1)}` : 'N/A';
+            const year = anime.seasonYear || anime.startDate?.year || 'Unknown';
+            
+            return `
+                <div onclick="openModal(${anime.id})" class="anime-card group cursor-pointer relative bg-gray-800 rounded-xl overflow-hidden shadow-lg transition-all duration-300">
+                    <div class="aspect-[2/3] overflow-hidden">
+                        <img src="${image}" alt="${title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                            <button class="bg-indigo-600 text-white py-2 px-4 rounded-full text-sm font-bold shadow-lg hover:bg-indigo-500 transition">View Details</button>
+                        </div>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-bold text-white truncate text-sm md:text-base" title="${title}">${title}</h4>
+                        <div class="flex justify-between items-center mt-1 text-xs text-gray-400">
+                            <span>${year}</span>
+                            <span class="text-yellow-400 font-bold">${score}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadTopAnime() {
+            const container = document.getElementById('top-airing-container');
+            if (!container) return;
+            
+            const query = `
+                query {
+                    Page(page: 1, perPage: 10) {
+                        media(type: ANIME, sort: TRENDING_DESC) {
+                            id
+                            title { romaji english }
+                            coverImage { large medium }
+                            averageScore
+                            seasonYear
+                            startDate { year }
+                        }
+                    }
+                }
+            `;
+            
+            try {
+                const data = await anilistQuery(query);
+                container.innerHTML = data.Page.media.map(createAnimeCard).join('');
+            } catch (error) {
+                container.innerHTML = '<p class="text-red-400 col-span-full text-center">Failed to load anime.</p>';
+            }
+        }
+
+        let searchTimeout;
+        function debounceSearch(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                state.browse.search = e.target.value;
+                state.browse.page = 1;
+                loadBrowseData();
+            }, 500);
+        }
+
+        function handleFilterChange() {
+            state.browse.genre = document.getElementById('genre-filter')?.value || '';
+            state.browse.format = document.getElementById('format-filter')?.value || '';
+            state.browse.status = document.getElementById('status-filter')?.value || '';
+            state.browse.minScore = document.getElementById('score-filter')?.value || '';
+            state.browse.year = document.getElementById('year-filter')?.value || '';
+            state.browse.page = 1;
+            updateActiveFiltersCount();
+            loadBrowseData();
+        }
+
+        function toggleFilters() {
+            const panel = document.getElementById('advanced-filters');
+            const text = document.getElementById('filter-toggle-text');
+            
+            if (panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                text.textContent = 'Hide Advanced Filters';
+            } else {
+                panel.classList.add('hidden');
+                text.textContent = 'Show Advanced Filters';
+            }
+        }
+
+        function clearSearch() {
+            state.browse.search = '';
+            document.getElementById('search-input').value = '';
+            state.browse.page = 1;
+            loadBrowseData();
+        }
+
+        function clearAllFilters() {
+            state.browse = { page: 1, search: '', genre: '', format: '', status: '', sort: 'POPULARITY_DESC', minScore: '', year: '' };
+            
+            ['search-input', 'genre-filter', 'format-filter', 'status-filter', 'score-filter', 'year-filter'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            
+            document.querySelectorAll('.sort-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'border-indigo-500');
+                btn.classList.add('bg-gray-700', 'border-gray-600');
+            });
+            
+            const defaultSort = document.getElementById('sort-popularity');
+            if (defaultSort) {
+                defaultSort.classList.add('bg-indigo-600', 'border-indigo-500');
+                defaultSort.classList.remove('bg-gray-700', 'border-gray-600');
+            }
+            
+            updateActiveFiltersCount();
+            loadBrowseData();
+        }
+
+        function setSortOption(sort) {
+            state.browse.sort = sort;
+            state.browse.page = 1;
+            
+            document.querySelectorAll('.sort-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'border-indigo-500');
+                btn.classList.add('bg-gray-700', 'border-gray-600');
+            });
+            
+            const activeBtn = document.querySelector(`[onclick="setSortOption('${sort}')"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-indigo-600', 'border-indigo-500');
+                activeBtn.classList.remove('bg-gray-700', 'border-gray-600');
+            }
+            
+            loadBrowseData();
+        }
+
+        function updateActiveFiltersCount() {
+            const count = [state.browse.genre, state.browse.format, state.browse.status, state.browse.minScore, state.browse.year].filter(v => v).length;
+            const badge = document.getElementById('active-filters-count');
+            if (badge) {
+                badge.textContent = count;
+                badge.classList.toggle('hidden', count === 0);
+            }
+        }
+
+        function changePage(delta) {
+            state.browse.page += delta;
+            if (state.browse.page < 1) state.browse.page = 1;
+            loadBrowseData();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function loadBrowseData() {
+            const container = document.getElementById('browse-results');
+            const indicator = document.getElementById('page-indicator');
+            if (!container) return;
+            
+            container.innerHTML = getLoaderHtml();
+            if (indicator) indicator.textContent = `Page ${state.browse.page}`;
+
+            let filters = [];
+            if (state.browse.search) filters.push(`search: "${state.browse.search}"`);
+            if (state.browse.genre) filters.push(`genre_in: ["${state.browse.genre}"]`);
+            if (state.browse.format) filters.push(`format: ${state.browse.format}`);
+            if (state.browse.status) filters.push(`status: ${state.browse.status}`);
+            if (state.browse.minScore) filters.push(`averageScore_greater: ${state.browse.minScore}`);
+            if (state.browse.year) filters.push(`seasonYear: ${state.browse.year}`);
+            
+            const query = `
+                query {
+                    Page(page: ${state.browse.page}, perPage: 20) {
+                        pageInfo { hasNextPage currentPage }
+                        media(type: ANIME, sort: ${state.browse.sort} ${filters.length ? ', ' + filters.join(', ') : ''}) {
+                            id
+                            title { romaji english }
+                            coverImage { large medium }
+                            averageScore
+                            seasonYear
+                            startDate { year }
+                        }
+                    }
+                }
+            `;
+            
+            try {
+                const data = await anilistQuery(query);
+                
+                if (data.Page.media.length > 0) {
+                    container.innerHTML = data.Page.media.map(createAnimeCard).join('');
+                    
+                    const prevBtn = document.getElementById('prev-page');
+                    const nextBtn = document.getElementById('next-page');
+                    if (prevBtn) prevBtn.disabled = state.browse.page <= 1;
+                    if (nextBtn) nextBtn.disabled = !data.Page.pageInfo.hasNextPage;
+                } else {
+                    container.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400 text-xl">No results found.</div>';
+                }
+            } catch (error) {
+                container.innerHTML = '<p class="text-red-400 col-span-full text-center">Error loading data.</p>';
+            }
+        }
+
+        function handleQuizAnswer(value) {
+            state.quiz.answers.push(value);
+            state.quiz.currentStep++;
+            document.getElementById('app').innerHTML = views.quiz();
+            if (state.quiz.currentStep >= 5) fetchQuizResults();
+        }
+
+        function resetQuiz() {
+            state.quiz = { currentStep: 0, answers: [] };
+            navigate('quiz');
+        }
+
+        async function fetchQuizResults() {
+            const container = document.getElementById('quiz-results');
+            if (!container) return;
+            
+            const genres = state.quiz.answers.filter(a => state.genres.includes(a));
+            const genreFilter = genres.length > 0 ? `genre_in: ["${genres[0]}"]` : '';
+            
+            const query = `
+                query {
+                    Page(page: 1, perPage: 8) {
+                        media(type: ANIME, sort: SCORE_DESC, averageScore_greater: 70 ${genreFilter ? ', ' + genreFilter : ''}) {
+                            id
+                            title { romaji english }
+                            coverImage { large medium }
+                            averageScore
+                            seasonYear
+                            startDate { year }
+                        }
+                    }
+                }
+            `;
+            
+            try {
+                const data = await anilistQuery(query);
+                const shuffled = data.Page.media.sort(() => 0.5 - Math.random()).slice(0, 4);
+                container.innerHTML = shuffled.map(createAnimeCard).join('');
+            } catch (e) {
+                container.innerHTML = '<p class="text-red-400 col-span-full text-center">Could not calculate results.</p>';
+            }
+        }
+
+        async function surpriseMe() {
+            try {
+                let filters = [];
+                if (state.surprise.genre) filters.push(`genre_in: ["${state.surprise.genre}"]`);
+                if (state.surprise.format) filters.push(`format: ${state.surprise.format}`);
+                if (state.surprise.minScore) filters.push(`averageScore_greater: ${state.surprise.minScore}`);
+                if (state.surprise.year) filters.push(`seasonYear: ${state.surprise.year}`);
+                
+                const page = Math.floor(Math.random() * 5) + 1;
+                const query = `
+                    query {
+                        Page(page: ${page}, perPage: 20) {
+                            media(type: ANIME, sort: POPULARITY_DESC ${filters.length ? ', ' + filters.join(', ') : ''}) {
+                                id
+                            }
+                        }
+                    }
+                `;
+                
+                const data = await anilistQuery(query);
+                if (data.Page.media.length > 0) {
+                    const random = data.Page.media[Math.floor(Math.random() * data.Page.media.length)];
+                    openModal(random.id);
+                } else {
+                    alert("No anime found with these filters.");
+                }
+            } catch (e) {
+                alert("Surprise failed! Try again.");
+            }
+        }
+
+        async function openModal(id) {
+            const overlay = document.getElementById('modal-overlay');
+            const content = document.getElementById('modal-content');
+            
+            overlay.classList.remove('hidden', 'opacity-0');
+            content.classList.remove('scale-95');
+            content.classList.add('scale-100');
+            
+            content.innerHTML = '<div class="p-10 flex justify-center"><div class="loader"></div></div>';
+            
+            const query = `
+                query {
+                    Media(id: ${id}) {
+                        id
+                        title { romaji english native }
+                        coverImage { extraLarge large }
+                        bannerImage
+                        description
+                        episodes
+                        duration
+                        status
+                        season
+                        seasonYear
+                        averageScore
+                        popularity
+                        favourites
+                        genres
+                        format
+                        source
+                        studios { nodes { name } }
+                        trailer { id site }
+                        relations {
+                            edges {
+                                relationType
+                                node {
+                                    id
+                                    title { romaji english }
+                                    coverImage { large medium }
+                                    format
+                                    averageScore
+                                }
+                            }
+                        }
+                        characters(perPage: 8, sort: ROLE) {
+                            edges {
+                                role
+                                node {
+                                    id
+                                    name { full }
+                                    image { large }
+                                }
+                            }
+                        }
+                        recommendations(perPage: 6, sort: RATING_DESC) {
+                            nodes {
+                                mediaRecommendation {
+                                    id
+                                    title { romaji english }
+                                    coverImage { large medium }
+                                    averageScore
+                                }
+                            }
+                        }
+                        siteUrl
+                    }
+                }
+            `;
+            
+            try {
+                const data = await anilistQuery(query);
+                const anime = data.Media;
+                
+                const title = anime.title.english || anime.title.romaji;
+                const image = anime.coverImage.extraLarge || anime.coverImage.large;
+                const bgImage = anime.bannerImage || image;
+                const description = anime.description?.replace(/<[^>]*>/g, '') || 'No description available.';
+                const score = anime.averageScore ? (anime.averageScore / 10).toFixed(1) : 'N/A';
+                const trailer = anime.trailer?.site === 'youtube' ? `https://www.youtube.com/embed/${anime.trailer.id}` : null;
+                const genres = anime.genres?.map(g => `<span class="px-2 py-1 bg-indigo-600/30 border border-indigo-500/50 rounded text-xs">${g}</span>`).join(' ') || 'N/A';
+                const studios = anime.studios?.nodes?.map(s => s.name).join(', ') || 'Unknown';
+                const season = anime.season && anime.seasonYear ? `${anime.season} ${anime.seasonYear}` : 'N/A';
+                
+                // Store character data for modal access
+                currentAnimeCharacters = anime.characters?.edges || [];
+                
+                const characters = anime.characters?.edges?.map((char, index) => `
+                    <div onclick="openCharacterModal(${anime.id}, ${index})" class="bg-gray-700/50 rounded-lg overflow-hidden border border-gray-600 hover:border-pink-500 transition-all group cursor-pointer">
+                        <div class="aspect-[3/4] overflow-hidden">
+                            <img src="${char.node.image.large}" alt="${char.node.name.full}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                        </div>
+                        <div class="p-2">
+                            <p class="text-xs font-medium truncate">${char.node.name.full}</p>
+                            <p class="text-xs text-gray-400">${char.role}</p>
+                            ${char.voiceActors && char.voiceActors.length > 0 ? `
+                                <div class="mt-2 pt-2 border-t border-gray-600">
+                                    <p class="text-[10px] text-gray-500 truncate">CV: ${char.voiceActors[0].name.full}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('') || '';
+                
+                const recommendations = anime.recommendations?.nodes?.filter(r => r.mediaRecommendation).map(rec => `
+                    <div onclick="openModal(${rec.mediaRecommendation.id}); event.stopPropagation();" class="cursor-pointer group">
+                        <div class="aspect-[2/3] overflow-hidden rounded-lg border border-gray-600 hover:border-pink-500 transition-all">
+                            <img src="${rec.mediaRecommendation.coverImage.large}" alt="${rec.mediaRecommendation.title.english || rec.mediaRecommendation.title.romaji}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                        </div>
+                        <p class="text-xs mt-1 truncate text-gray-300">${rec.mediaRecommendation.title.english || rec.mediaRecommendation.title.romaji}</p>
+                    </div>
+                `).join('') || '';
+
+                const relations = anime.relations?.edges?.filter(r => ['SEQUEL', 'PREQUEL', 'SIDE_STORY', 'ALTERNATIVE'].includes(r.relationType)).map(rel => `
+                    <div onclick="openModal(${rel.node.id}); event.stopPropagation();" class="cursor-pointer group bg-gray-700/50 rounded-lg p-3 border border-gray-600 hover:border-pink-500 transition-all flex gap-3">
+                        <img src="${rel.node.coverImage.medium}" alt="${rel.node.title.romaji}" class="w-16 h-24 object-cover rounded flex-shrink-0">
+                        <div class="overflow-hidden">
+                            <p class="text-xs text-pink-400 font-bold mb-1">${rel.relationType.replace('_', ' ')}</p>
+                            <p class="text-sm font-medium truncate">${rel.node.title.english || rel.node.title.romaji}</p>
+                            <p class="text-xs text-gray-400 truncate">${rel.node.format} • ${rel.node.averageScore ? (rel.node.averageScore / 10).toFixed(1) : 'N/A'}</p>
+                        </div>
+                    </div>
+                `).join('') || '';
+                
+                content.innerHTML = `
+                    <div class="relative">
+                        <div class="absolute inset-0 rounded-xl overflow-hidden">
+                            <div class="absolute inset-0 bg-cover bg-center blur-2xl opacity-20" style="background-image: url('${bgImage}');"></div>
+                            <div class="absolute inset-0 bg-gradient-to-b from-gray-900/95 via-gray-900/98 to-gray-900"></div>
+                        </div>
+                        
+                        <button onclick="closeModal()" class="absolute top-4 right-4 bg-gray-700/90 backdrop-blur-sm hover:bg-red-600 text-white rounded-full p-2 z-50 transition-all hover:scale-110">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        
+                        <div class="relative flex flex-col md:flex-row">
+                            <div class="md:w-1/3 p-6 md:p-8">
+                                <div class="sticky top-6">
+                                    <img src="${image}" alt="${title}" class="w-full rounded-xl shadow-2xl border-2 border-gray-700">
+                                    
+                                    <div class="mt-6 bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 border border-gray-700">
+                                        <div class="grid grid-cols-2 gap-4 text-sm">
+                                            <div class="text-center">
+                                                <div class="text-2xl font-bold text-yellow-400">${score}</div>
+                                                <div class="text-xs text-gray-400 mt-1">Score</div>
+                                            </div>
+                                            <div class="text-center">
+                                                <div class="text-2xl font-bold text-indigo-400">${anime.popularity?.toLocaleString() || 'N/A'}</div>
+                                                <div class="text-xs text-gray-400 mt-1">Popularity</div>
+                                            </div>
+                                            <div class="text-center col-span-2">
+                                                <div class="text-2xl font-bold text-pink-400">❤️ ${anime.favourites?.toLocaleString() || 'N/A'}</div>
+                                                <div class="text-xs text-gray-400 mt-1">Favorites</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4 space-y-2">
+                                        <a href="${anime.siteUrl}" target="_blank" class="block bg-indigo-600 hover:bg-indigo-500 text-center py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-lg">AniList Page</a>
+                                        ${trailer ? '<button onclick="document.getElementById(\'trailer-section\').scrollIntoView({behavior: \'smooth\'})" class="w-full bg-pink-600 hover:bg-pink-500 text-center py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-lg">Watch Trailer</button>' : ''}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="md:w-2/3 p-6 md:p-8 overflow-y-auto max-h-[85vh] scrollbar-thin">
+                                <h2 class="text-3xl md:text-4xl font-bold mb-2 text-white leading-tight break-words">${title}</h2>
+                                <p class="text-gray-400 text-sm mb-4 break-words">${anime.title.native || ''}</p>
+                                
+                                <div class="flex flex-wrap gap-2 mb-6">
+                                    <span class="px-3 py-1.5 bg-indigo-600 rounded-full text-xs font-bold">${anime.status}</span>
+                                    <span class="px-3 py-1.5 bg-gray-700 rounded-full text-xs font-bold">${anime.format}</span>
+                                    <span class="px-3 py-1.5 bg-gray-700 rounded-full text-xs">${anime.episodes || '?'} Episodes</span>
+                                    <span class="px-3 py-1.5 bg-gray-700 rounded-full text-xs">${anime.duration || '?'} min</span>
+                                </div>
+                                
+                                <div class="mb-8">
+                                    <h3 class="text-xl font-bold text-indigo-400 mb-3">Synopsis</h3>
+                                    <p class="text-gray-300 leading-relaxed text-sm break-words">${description}</p>
+                                </div>
+                                
+                                <div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-800/50 rounded-xl p-5 border border-gray-700">
+                                    <div>
+                                        <span class="block text-gray-500 text-xs uppercase font-semibold mb-1">Season</span>
+                                        <span class="font-medium text-sm">${season}</span>
+                                    </div>
+                                    <div>
+                                        <span class="block text-gray-500 text-xs uppercase font-semibold mb-1">Studios</span>
+                                        <span class="font-medium text-sm">${studios}</span>
+                                    </div>
+                                    <div>
+                                        <span class="block text-gray-500 text-xs uppercase font-semibold mb-1">Source</span>
+                                        <span class="font-medium text-sm">${anime.source || 'N/A'}</span>
+                                    </div>
+                                    <div>
+                                        <span class="block text-gray-500 text-xs uppercase font-semibold mb-1">Format</span>
+                                        <span class="font-medium text-sm">${anime.format}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-8">
+                                    <h3 class="text-lg font-bold text-indigo-400 mb-3">Genres</h3>
+                                    <div class="flex flex-wrap gap-2">${genres}</div>
+                                </div>
+                                
+                                ${relations ? `<div class="mb-8"><h3 class="text-xl font-bold text-indigo-400 mb-4">Related Anime</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3">${relations}</div></div>` : ''}
+                                
+                                ${trailer ? `<div id="trailer-section" class="mb-8"><h3 class="text-xl font-bold text-indigo-400 mb-4">Trailer</h3><div class="aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border-2 border-gray-700"><iframe src="${trailer}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen class="w-full h-full"></iframe></div></div>` : ''}
+                                
+                                ${characters ? `<div class="mb-8"><h3 class="text-xl font-bold text-indigo-400 mb-4">Main Characters</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-3">${characters}</div></div>` : ''}
+                                
+                                ${recommendations ? `<div class="mb-6"><h3 class="text-xl font-bold text-indigo-400 mb-4">You Might Also Like</h3><div class="grid grid-cols-3 md:grid-cols-6 gap-3">${recommendations}</div></div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                content.innerHTML = '<div class="p-10 text-center text-red-400">Failed to load details.</div>';
+            }
+        }
+
+        function closeModal() {
+            const overlay = document.getElementById('modal-overlay');
+            const content = document.getElementById('modal-content');
+            
+            overlay.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                content.innerHTML = '';
+            }, 300);
+        }
+
+        document.getElementById('modal-overlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modal-overlay')) closeModal();
+        });
+
+        // Store character data globally for character modal
+        let currentAnimeCharacters = [];
+
+        async function openCharacterModal(animeId, charIndex) {
+            // Fetch full character details
+            const char = currentAnimeCharacters[charIndex];
+            if (!char) return;
+
+            const charQuery = `
+                query {
+                    Character(id: ${char.node.id}) {
+                        id
+                        name { full native }
+                        image { large }
+                        description
+                        age
+                        gender
+                        dateOfBirth { year month day }
+                        bloodType
+                    }
+                }
+            `;
+
+            try {
+                const data = await anilistQuery(charQuery);
+                const character = data.Character;
+                
+                const charOverlay = document.createElement('div');
+                charOverlay.id = 'character-modal-overlay';
+                charOverlay.className = 'fixed inset-0 bg-black/90 backdrop-blur-sm z-[60] flex items-center justify-center p-4';
+                
+                const description = character.description?.replace(/<[^>]*>/g, '') || 'No description available.';
+                const birthDate = character.dateOfBirth?.year ? `${character.dateOfBirth.month}/${character.dateOfBirth.day}/${character.dateOfBirth.year}` : 'Unknown';
+                
+                charOverlay.innerHTML = `
+                    <div class="bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700 scrollbar-thin transform scale-95 animate-scale-in">
+                        <div class="relative">
+                            <button onclick="closeCharacterModal()" class="absolute top-4 right-4 bg-gray-700/90 backdrop-blur-sm hover:bg-red-600 text-white rounded-full p-2 z-10 transition-all hover:scale-110">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            
+                            <div class="flex flex-col md:flex-row">
+                                <div class="md:w-2/5 p-6">
+                                    <img src="${character.image.large}" alt="${character.name.full}" class="w-full rounded-xl shadow-2xl border-2 border-gray-700">
+                                    
+                                    <div class="mt-6 bg-gray-700/50 rounded-xl p-4 border border-gray-600">
+                                        <h4 class="text-sm font-bold text-gray-400 mb-3 uppercase">Character Info</h4>
+                                        <div class="space-y-2 text-sm">
+                                            ${character.age ? `<div><span class="text-gray-500">Age:</span> <span class="text-white font-medium">${character.age}</span></div>` : ''}
+                                            ${character.gender ? `<div><span class="text-gray-500">Gender:</span> <span class="text-white font-medium">${character.gender}</span></div>` : ''}
+                                            ${character.dateOfBirth?.year ? `<div><span class="text-gray-500">Birthday:</span> <span class="text-white font-medium">${birthDate}</span></div>` : ''}
+                                            ${character.bloodType ? `<div><span class="text-gray-500">Blood Type:</span> <span class="text-white font-medium">${character.bloodType}</span></div>` : ''}
+                                            <div><span class="text-gray-500">Role:</span> <span class="text-pink-400 font-bold">${char.role}</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="md:w-3/5 p-6">
+                                    <h2 class="text-3xl font-bold mb-2 text-white break-words">${character.name.full}</h2>
+                                    ${character.name.native ? `<p class="text-gray-400 text-sm mb-6 break-words">${character.name.native}</p>` : ''}
+                                    
+                                    <div>
+                                        <h3 class="text-lg font-bold text-indigo-400 mb-3">About</h3>
+                                        <p class="text-gray-300 leading-relaxed text-sm break-words">${description}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(charOverlay);
+                setTimeout(() => charOverlay.querySelector('div').classList.remove('scale-95'), 10);
+                
+                charOverlay.addEventListener('click', (e) => {
+                    if (e.target === charOverlay) closeCharacterModal();
+                });
+            } catch (error) {
+                console.error('Failed to load character details:', error);
+            }
+        }
+
+        function closeCharacterModal() {
+            const charOverlay = document.getElementById('character-modal-overlay');
+            if (charOverlay) {
+                charOverlay.querySelector('div').classList.add('scale-95');
+                setTimeout(() => charOverlay.remove(), 300);
+            }
+        }
+
+        function openSurpriseSettings() {
+            const overlay = document.getElementById('surprise-settings-overlay');
+            const content = document.getElementById('surprise-settings-content');
+            
+            const genreOptions = state.genres.map(g => `<option value="${g}" ${state.surprise.genre === g ? 'selected' : ''}>${g}</option>`).join('');
+            
+            content.innerHTML = `
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-pink-400">🎲 Surprise Me Settings</h2>
+                        <button onclick="closeSurpriseSettings()" class="text-gray-400 hover:text-white transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <p class="text-gray-400 mb-6 text-sm">Customize the filters for your random anime selection</p>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Preferred Genre</label>
+                            <select id="surprise-genre" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
+                                <option value="">Any Genre</option>
+                                ${genreOptions}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Format</label>
+                            <select id="surprise-format" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
+                                <option value="">Any Format</option>
+                                <option value="TV" ${state.surprise.format === 'TV' ? 'selected' : ''}>TV Series</option>
+                                <option value="MOVIE" ${state.surprise.format === 'MOVIE' ? 'selected' : ''}>Movie</option>
+                                <option value="OVA" ${state.surprise.format === 'OVA' ? 'selected' : ''}>OVA</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Minimum Score</label>
+                            <select id="surprise-score" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
+                                <option value="" ${!state.surprise.minScore ? 'selected' : ''}>Any Score</option>
+                                <option value="80" ${state.surprise.minScore === '80' ? 'selected' : ''}>80+ (Excellent)</option>
+                                <option value="70" ${state.surprise.minScore === '70' ? 'selected' : ''}>70+ (Good)</option>
+                                <option value="60" ${state.surprise.minScore === '60' ? 'selected' : ''}>60+ (Fine)</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">From Year (optional)</label>
+                            <input type="number" id="surprise-year" value="${state.surprise.year}" placeholder="e.g., 2020" min="1960" max="2025" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 flex gap-3">
+                        <button onclick="clearSurpriseSettings()" class="flex-1 px-6 py-3 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-lg transition-all font-medium">Reset Filters</button>
+                        <button onclick="saveSurpriseSettings()" class="flex-1 px-6 py-3 bg-pink-600 hover:bg-pink-500 rounded-lg transition-all font-medium">Save Filters ✓</button>
+                    </div>
+                </div>
+            `;
+            
+            overlay.classList.remove('hidden', 'opacity-0');
+            content.classList.remove('scale-95');
+            content.classList.add('scale-100');
+        }
+
+        function closeSurpriseSettings() {
+            const overlay = document.getElementById('surprise-settings-overlay');
+            const content = document.getElementById('surprise-settings-content');
+            
+            overlay.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => overlay.classList.add('hidden'), 300);
+        }
+
+        function clearSurpriseSettings() {
+            state.surprise = { genre: '', format: '', minScore: '70', year: '' };
+            openSurpriseSettings();
+        }
+
+        function saveSurpriseSettings() {
+            state.surprise.genre = document.getElementById('surprise-genre')?.value || '';
+            state.surprise.format = document.getElementById('surprise-format')?.value || '';
+            state.surprise.minScore = document.getElementById('surprise-score')?.value || '';
+            state.surprise.year = document.getElementById('surprise-year')?.value || '';
+            closeSurpriseSettings();
+        }
+
+        document.getElementById('surprise-settings-overlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('surprise-settings-overlay')) closeSurpriseSettings();
+        });
+
+        init();
+    </script>
+</body>
+</html>

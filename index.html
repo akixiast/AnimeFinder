@@ -4,142 +4,276 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AnimeFinder - Discover Your Next Favorite Anime</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style type="text/tailwindcss">
         @theme {
             --color-primary: #6366f1;
             --color-secondary: #ec4899;
-            --color-dark: #111827;
+            --color-dark: #0f172a;
+            --color-surface: #1e293b;
+            --font-sans: 'Outfit', sans-serif;
         }
         
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(236, 72, 153, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-card:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 10px 40px -10px rgba(99, 102, 241, 0.3);
+            transform: translateY(-5px);
+        }
+
         /* Card Animations */
         .anime-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .anime-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Marquee Animation */
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-33.33%); } /* Shifted to 1/3 because we tripled content */
+        }
+        @keyframes marquee-reverse {
+            0% { transform: translateX(-33.33%); }
+            100% { transform: translateX(0); }
+        }
+        .marquee-container {
+            mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+        }
+        .marquee-content {
+            display: flex;
+            width: max-content;
+            animation: marquee 45s linear infinite;
+        }
+        .marquee-content.reverse {
+            animation: marquee-reverse 50s linear infinite;
+        }
+        .marquee-content:hover {
+            animation-play-state: paused;
+        }
+
         /* Loader */
         .loader {
-            border: 4px solid #374151;
+            width: 48px;
+            height: 48px;
+            border: 3px solid #FFF;
             border-radius: 50%;
-            border-top: 4px solid #6366f1;
-            width: 50px;
-            height: 50px;
-            animation: spin 0.8s linear infinite;
+            display: inline-block;
+            position: relative;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
         }
-        @keyframes spin {
+        .loader::after {
+            content: '';  
+            box-sizing: border-box;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid;
+            border-color: #6366f1 transparent;
+        }
+        @keyframes rotation {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
         
-        /* Fade In */
+        /* Fade In & Scale */
         .fade-in {
-            animation: fadeIn 0.6s ease-out;
+            animation: fadeIn 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
         }
         @keyframes fadeIn {
-            from { 
-                opacity: 0;
-                transform: translateY(20px);
-            }
             to { 
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
+        .stagger-1 { animation-delay: 100ms; }
+        .stagger-2 { animation-delay: 200ms; }
+        .stagger-3 { animation-delay: 300ms; }
+        .stagger-4 { animation-delay: 400ms; }
+
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(to right, #818cf8, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Input Reset */
+        input, select {
+            appearance: none;
+            -webkit-appearance: none;
+        }
         
-        /* Gradient Animation */
-        .gradient-animate {
-            background-size: 200% 200%;
-            animation: gradient 8s ease infinite;
-        }
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        /* Scrollbar Styling */
-        .scrollbar-thin::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-track {
-            background: #1f2937;
-            border-radius: 10px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb {
-            background: #4b5563;
-            border-radius: 10px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        /* Selection */
+        ::selection {
             background: #6366f1;
-        }
-        
-        /* Quiz Option Hover */
-        .quiz-option {
-            position: relative;
-            overflow: hidden;
-        }
-        .quiz-option:before {
-            content: '';
-            position: absolute;
-            left: -100%;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
-            transition: left 0.5s;
-        }
-        .quiz-option:hover:before {
-            left: 100%;
+            color: white;
         }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
+<body class="text-slate-200 min-h-screen overflow-x-hidden">
 
     <!-- Navigation -->
-    <nav class="bg-gray-800/50 backdrop-blur-md fixed w-full z-50 border-b border-gray-700">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="#" onclick="navigate('home')" class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-pink-500">AnimeFinder</a>
-            <div class="hidden md:flex space-x-6">
-                <button onclick="navigate('home')" class="hover:text-indigo-400 transition">Home</button>
-                <button onclick="navigate('quiz')" class="hover:text-indigo-400 transition">Quiz</button>
-                <button onclick="navigate('browse')" class="hover:text-indigo-400 transition">Browse</button>
-                <button onclick="surpriseMe()" class="hover:text-pink-400 transition">Surprise Me</button>
+    <nav class="fixed w-full z-50 top-0 transition-all duration-300 glass border-b-0">
+        <div class="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
+            <a href="#" onclick="navigate('home')" class="flex items-center gap-2 group">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-lg group-hover:scale-110 transition-transform">AF</div>
+                <span class="text-xl font-bold tracking-tight text-white group-hover:text-indigo-300 transition-colors">AnimeFinder</span>
+            </a>
+            
+            <div class="hidden md:flex items-center space-x-1 bg-slate-800/50 p-1 rounded-full border border-slate-700/50 backdrop-blur-sm">
+                <button onclick="navigate('home')" id="nav-home" class="nav-btn px-5 py-2 rounded-full text-sm font-medium transition-all hover:text-white text-slate-400">Home</button>
+                <button onclick="navigate('quiz')" id="nav-quiz" class="nav-btn px-5 py-2 rounded-full text-sm font-medium transition-all hover:text-white text-slate-400">Quiz</button>
+                <button onclick="navigate('browse')" id="nav-browse" class="nav-btn px-5 py-2 rounded-full text-sm font-medium transition-all hover:text-white text-slate-400">Browse</button>
+                <button onclick="navigate('schedule')" id="nav-schedule" class="nav-btn px-5 py-2 rounded-full text-sm font-medium transition-all hover:text-white text-slate-400">Schedule</button>
             </div>
-            <button class="md:hidden text-gray-300" onclick="toggleMobileMenu()">
+
+            <div class="hidden md:flex items-center gap-3">
+                <button onclick="surpriseMe()" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white rounded-lg text-sm font-semibold shadow-lg shadow-indigo-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                    Surprise Me
+                </button>
+            </div>
+
+            <button class="md:hidden text-slate-300 p-2 rounded-lg hover:bg-slate-800" onclick="toggleMobileMenu()">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
                 </svg>
             </button>
         </div>
-        <div id="mobile-menu" class="hidden md:hidden bg-gray-800 border-t border-gray-700 p-4 space-y-2">
-            <button onclick="navigate('home'); toggleMobileMenu()" class="block w-full text-left py-2">Home</button>
-            <button onclick="navigate('quiz'); toggleMobileMenu()" class="block w-full text-left py-2">Quiz</button>
-            <button onclick="navigate('browse'); toggleMobileMenu()" class="block w-full text-left py-2">Browse</button>
-            <button onclick="surpriseMe(); toggleMobileMenu()" class="block w-full text-left py-2 text-pink-400">Surprise Me</button>
+        
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-slate-900/95 border-b border-slate-800 p-4 space-y-2 shadow-2xl backdrop-blur-xl">
+            <button onclick="navigate('home'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 font-medium">Home</button>
+            <button onclick="navigate('quiz'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 font-medium">Quiz</button>
+            <button onclick="navigate('browse'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 font-medium">Browse</button>
+            <button onclick="navigate('schedule'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 font-medium">Schedule</button>
+            <button onclick="surpriseMe(); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-600/20 to-pink-600/20 text-pink-400 font-medium border border-pink-500/30 mt-2">Surprise Me</button>
         </div>
     </nav>
 
-    <main id="app" class="pt-20 container mx-auto px-4 pb-12 min-h-screen">
-        <!-- Content will be injected here by JavaScript -->
+    <main id="app" class="pt-24 container mx-auto px-4 md:px-6 pb-12 min-h-screen transition-all">
+        <!-- Content injected via JS -->
     </main>
 
-    <footer class="bg-gray-800 border-t border-gray-700 py-6 text-center text-gray-400 text-sm">
-        <p>Powered by <a href="https://anilist.co/" target="_blank" class="text-indigo-400 hover:underline">AniList API</a></p>
-        <p class="mt-2">&copy; 2024 AnimeFinder. All rights reserved.</p>
+    <footer class="glass mt-auto border-t border-slate-800">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-lg">AF</div>
+                        <span class="text-xl font-bold text-white">AnimeFinder</span>
+                    </div>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Your ultimate destination for discovering anime. Powered by the AniList API, we help you find your next obsession in seconds.
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="#" class="text-slate-400 hover:text-indigo-400 transition"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg></a>
+                        <a href="#" class="text-slate-400 hover:text-indigo-400 transition"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-white font-bold mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-sm text-slate-400">
+                        <li><button onclick="navigate('home')" class="hover:text-indigo-400 transition">Home</button></li>
+                        <li><button onclick="navigate('quiz')" class="hover:text-indigo-400 transition">Recommendation Quiz</button></li>
+                        <li><button onclick="navigate('browse')" class="hover:text-indigo-400 transition">Browse Collection</button></li>
+                        <li><button onclick="navigate('schedule')" class="hover:text-indigo-400 transition">Airing Schedule</button></li>
+                        <li><button onclick="surpriseMe()" class="hover:text-pink-400 transition">Surprise Me!</button></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-white font-bold mb-4">Legal & Credits</h3>
+                    <ul class="space-y-2 text-sm text-slate-400">
+                        <li>Data provided by <a href="https://anilist.co/" target="_blank" class="text-indigo-400 hover:underline">AniList API</a></li>
+                        <li>Images are property of their owners</li>
+                        <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-slate-800 mt-10 pt-6 text-center text-slate-500 text-xs">
+                &copy; 2025 AnimeFinder. Made with ❤️ by AKI for the anime community.
+            </div>
+        </div>
     </footer>
 
-    <div id="modal-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div id="modal-content" class="bg-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700 transform scale-95 transition-transform duration-300 scrollbar-thin">
+    <!-- Main Modal -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 opacity-0 transition-all duration-300">
+        <div id="modal-content" class="bg-slate-900 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-700 transform scale-95 transition-all duration-300 shadow-indigo-500/10">
         </div>
     </div>
 
-    <div id="surprise-settings-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div id="surprise-settings-content" class="bg-gray-800 rounded-xl max-w-lg w-full shadow-2xl border border-gray-700 transform scale-95 transition-transform duration-300">
+    <!-- Character Modal (Nested) -->
+    <div id="character-modal-overlay" class="hidden"></div>
+
+    <!-- Settings Modal -->
+    <div id="surprise-settings-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 opacity-0 transition-all duration-300">
+        <div id="surprise-settings-content" class="bg-slate-900 rounded-2xl max-w-md w-full shadow-2xl border border-slate-700 transform scale-95 transition-all duration-300">
         </div>
     </div>
 
@@ -148,6 +282,7 @@
         
         const state = {
             currentPage: 'home',
+            schedule: { selectedDate: null },
             quiz: { currentStep: 0, answers: [] },
             browse: {
                 page: 1,
@@ -168,62 +303,188 @@
             genres: ['Action', 'Adventure', 'Comedy', 'Drama', 'Ecchi', 'Fantasy', 'Horror', 'Mahou Shoujo', 'Mecha', 'Music', 'Mystery', 'Psychological', 'Romance', 'Sci-Fi', 'Slice of Life', 'Sports', 'Supernatural', 'Thriller']
         };
 
-        async function anilistQuery(query, variables = {}) {
-            const response = await fetch(ANILIST_API, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({ query, variables })
+        // -- Utility Functions --
+
+        function updateActiveNav() {
+            ['home', 'quiz', 'browse', 'schedule'].forEach(page => {
+                const btn = document.getElementById(`nav-${page}`);
+                if (!btn) return;
+                
+                if (state.currentPage === page) {
+                    btn.classList.remove('text-slate-400', 'hover:text-white');
+                    btn.classList.add('bg-slate-700', 'text-white', 'shadow-sm');
+                } else {
+                    btn.classList.add('text-slate-400', 'hover:text-white');
+                    btn.classList.remove('bg-slate-700', 'text-white', 'shadow-sm');
+                }
             });
-            const data = await response.json();
-            return data.data;
         }
+
+        async function anilistQuery(query, variables = {}) {
+            try {
+                const response = await fetch(ANILIST_API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ query, variables })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error('Network response was not ok');
+                return data.data;
+            } catch (error) {
+                console.error('API Error:', error);
+                return null;
+            }
+        }
+
+        function getLoaderHtml() {
+            return '<div class="col-span-full flex justify-center py-20 items-center flex-col gap-4"><span class="loader"></span><span class="text-slate-500 text-sm font-medium animate-pulse">Fetching Anime...</span></div>';
+        }
+
+        function formatDate(dateObj) {
+            if (!dateObj || !dateObj.year) return 'Unknown';
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            if (dateObj.month) {
+                return `${months[dateObj.month - 1]} ${dateObj.year}`;
+            }
+            return dateObj.year;
+        }
+
+        // -- View Templates --
 
         const views = {
             home: () => `
-                <div class="flex flex-col items-center justify-center min-h-[80vh] text-center fade-in">
-                    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 gradient-animate">
-                        Find Your Next Obsession
+                <div class="flex flex-col items-center justify-center min-h-[70vh] text-center fade-in relative">
+                    <!-- Decorative Elements -->
+                    <div class="absolute top-10 left-10 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl"></div>
+                    <div class="absolute bottom-10 right-10 w-40 h-40 bg-pink-500/20 rounded-full blur-3xl"></div>
+
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700 text-xs font-medium text-indigo-400 mb-6 stagger-1">
+                        <span class="relative flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                        </span>
+                        Discover thousands of anime
+                    </div>
+                    
+                    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight leading-tight stagger-2">
+                        Find Your Next <br />
+                        <span class="text-gradient">Anime Obsession</span>
                     </h1>
-                    <p class="text-xl text-gray-300 mb-12 max-w-2xl leading-relaxed">
-                        Not sure what to watch next? Take our personalized quiz, browse our extensive collection, or let fate decide.
+                    
+                    <p class="text-lg text-slate-400 mb-10 max-w-2xl leading-relaxed stagger-3">
+                        Stop scrolling endlessly. Whether you know exactly what you want or need a little inspiration, we've got the perfect show for you.
                     </p>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
-                        <div onclick="navigate('quiz')" class="group cursor-pointer bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-2xl p-8 transition-all hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/20">
-                            <div class="text-4xl mb-4">📝</div>
-                            <h3 class="text-2xl font-bold mb-2 text-white group-hover:text-indigo-400 transition">Take the Quiz</h3>
-                            <p class="text-gray-400">Answer 5 simple questions to get personalized recommendations.</p>
-                        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-5xl stagger-4">
+                        <button onclick="navigate('quiz')" class="group relative glass-card rounded-2xl p-8 text-left transition-all overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <svg class="w-24 h-24 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"/></svg>
+                            </div>
+                            <div class="relative z-10">
+                                <div class="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center mb-4 text-indigo-400 group-hover:scale-110 transition-transform">
+                                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                                </div>
+                                <h3 class="text-xl font-bold mb-2 text-white">Take the Quiz</h3>
+                                <p class="text-slate-400 text-sm">Answer 5 questions to get a personalized recommendation instantly.</p>
+                            </div>
+                        </button>
 
-                        <div onclick="navigate('browse')" class="group cursor-pointer bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-2xl p-8 transition-all hover:border-purple-500 hover:shadow-lg hover:shadow-purple-500/20">
-                            <div class="text-4xl mb-4">🔍</div>
-                            <h3 class="text-2xl font-bold mb-2 text-white group-hover:text-purple-400 transition">Browse Anime</h3>
-                            <p class="text-gray-400">Search through thousands of anime with filters and genres.</p>
-                        </div>
+                        <button onclick="navigate('browse')" class="group relative glass-card rounded-2xl p-8 text-left transition-all overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <svg class="w-24 h-24 text-pink-400" fill="currentColor" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                            </div>
+                            <div class="relative z-10">
+                                <div class="w-12 h-12 rounded-xl bg-pink-500/20 flex items-center justify-center mb-4 text-pink-400 group-hover:scale-110 transition-transform">
+                                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                </div>
+                                <h3 class="text-xl font-bold mb-2 text-white">Browse Collection</h3>
+                                <p class="text-slate-400 text-sm">Filter by genre, year, score, and more to find hidden gems.</p>
+                            </div>
+                        </button>
 
-                        <div class="group cursor-pointer bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-2xl p-8 transition-all hover:border-pink-500 hover:shadow-lg hover:shadow-pink-500/20 relative">
-                            <button onclick="event.stopPropagation(); openSurpriseSettings()" class="absolute top-4 right-4 p-2 bg-gray-700 hover:bg-pink-600 rounded-full transition-all z-10 group/gear">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300 group-hover/gear:text-white group-hover/gear:rotate-90 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                            </button>
-                            <div onclick="surpriseMe()">
-                                <div class="text-4xl mb-4">🎲</div>
-                                <h3 class="text-2xl font-bold mb-2 text-white group-hover:text-pink-400 transition">Surprise Me</h3>
-                                <p class="text-gray-400">Feeling adventurous? Let us pick a random top-rated anime for you.</p>
+                        <div class="group relative glass-card rounded-2xl p-8 text-left transition-all overflow-hidden cursor-pointer" onclick="surpriseMe()">
+                            <div class="absolute top-3 right-3 z-20">
+                                <button onclick="event.stopPropagation(); openSurpriseSettings()" class="p-2 rounded-full hover:bg-slate-700/50 text-slate-400 hover:text-white transition-colors" title="Settings">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                </button>
+                            </div>
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <svg class="w-24 h-24 text-purple-400" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7.5 18c-.83 0-1.5-.67-1.5-1.5S6.67 15 7.5 15s1.5.67 1.5 1.5S8.33 18 7.5 18zm0-9C6.67 9 6 8.33 6 7.5S6.67 6 7.5 6 9 6.67 9 7.5 8.33 9 7.5 9zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm0-9c-.83 0-1.5-.67-1.5-1.5S15.67 6 16.5 6s1.5.67 1.5 1.5S17.33 9 16.5 9z"/></svg>
+                            </div>
+                            <div class="relative z-10">
+                                <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4 text-purple-400 group-hover:scale-110 transition-transform">
+                                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                                <h3 class="text-xl font-bold mb-2 text-white">Surprise Me</h3>
+                                <p class="text-slate-400 text-sm">Feeling lucky? Let the universe decide your next watch.</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="mt-12">
-                    <h2 class="text-2xl font-bold mb-6 px-2 border-l-4 border-indigo-500">Top Trending Now</h2>
-                    <div id="top-airing-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                        ${getLoaderHtml()}
+                <div class="mt-12 space-y-12 stagger-4 fade-in pb-12">
+                    
+                    <!-- Upcoming Marquee -->
+                    <div class="w-full overflow-hidden">
+                        <h2 class="text-2xl font-bold flex items-center gap-2 mb-6 px-2">
+                            <span class="w-1 h-6 bg-pink-500 rounded-full"></span>
+                            Upcoming Hype
+                        </h2>
+                        <div class="marquee-container w-full overflow-hidden">
+                            <div id="upcoming-container" class="marquee-content gap-6 py-4 pl-4">
+                                ${getLoaderHtml()}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Critically Acclaimed Marquee (Reverse) -->
+                    <div class="w-full overflow-hidden">
+                        <h2 class="text-2xl font-bold flex items-center gap-2 mb-6 px-2">
+                            <span class="w-1 h-6 bg-yellow-500 rounded-full"></span>
+                            Critically Acclaimed
+                        </h2>
+                        <div class="marquee-container w-full overflow-hidden">
+                            <div id="top-rated-container" class="marquee-content reverse gap-6 py-4 pl-4">
+                                ${getLoaderHtml()}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trending Carousel -->
+                    <div class="relative group/slider">
+                        <div class="flex items-center justify-between mb-6 px-2">
+                            <h2 class="text-2xl font-bold flex items-center gap-2">
+                                <span class="w-1 h-6 bg-indigo-500 rounded-full"></span>
+                                Trending Now
+                            </h2>
+                            <div class="flex gap-2">
+                                <button onclick="scrollCarousel('trending-container', -1)" class="p-2 rounded-full bg-slate-800/80 hover:bg-indigo-600 border border-slate-700 hover:border-indigo-500 transition shadow-lg backdrop-blur-sm"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
+                                <button onclick="scrollCarousel('trending-container', 1)" class="p-2 rounded-full bg-slate-800/80 hover:bg-indigo-600 border border-slate-700 hover:border-indigo-500 transition shadow-lg backdrop-blur-sm"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
+                            </div>
+                        </div>
+                        <div id="trending-container" class="flex gap-5 overflow-x-auto scroll-smooth no-scrollbar px-2 pb-8 snap-x">
+                            ${getLoaderHtml()}
+                        </div>
+                    </div>
+
+                    <!-- All Time Popular Carousel -->
+                    <div class="relative group/slider">
+                        <div class="flex items-center justify-between mb-6 px-2">
+                            <h2 class="text-2xl font-bold flex items-center gap-2">
+                                <span class="w-1 h-6 bg-purple-500 rounded-full"></span>
+                                All Time Popular
+                            </h2>
+                            <div class="flex gap-2">
+                                <button onclick="scrollCarousel('popular-container', -1)" class="p-2 rounded-full bg-slate-800/80 hover:bg-purple-600 border border-slate-700 hover:border-purple-500 transition shadow-lg backdrop-blur-sm"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
+                                <button onclick="scrollCarousel('popular-container', 1)" class="p-2 rounded-full bg-slate-800/80 hover:bg-purple-600 border border-slate-700 hover:border-purple-500 transition shadow-lg backdrop-blur-sm"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
+                            </div>
+                        </div>
+                        <div id="popular-container" class="flex gap-5 overflow-x-auto scroll-smooth no-scrollbar px-2 pb-8 snap-x">
+                            ${getLoaderHtml()}
+                        </div>
                     </div>
                 </div>
             `,
@@ -231,386 +492,449 @@
                 const questions = [
                     {
                         id: 1,
-                        text: "What is your preferred mood?",
+                        text: "What are you in the mood for?",
                         options: [
-                            { label: "Action & Adrenaline", value: "Action" },
-                            { label: "Laugh out loud", value: "Comedy" },
-                            { label: "Emotional & Dramatic", value: "Drama" },
-                            { label: "Dark & Mysterious", value: "Mystery" }
+                            { label: "Action & Hype", value: "Action", icon: "⚔️", desc: "Explosions, fights, and intensity." },
+                            { label: "Good Laughs", value: "Comedy", icon: "😂", desc: "Lighthearted fun and humor." },
+                            { label: "Deep & Emotional", value: "Drama", icon: "🎭", desc: "Stories that hit you in the feels." },
+                            { label: "Dark & Suspenseful", value: "Mystery", icon: "🕵️", desc: "Psychological thrillers and puzzles." }
                         ]
                     },
                     {
                         id: 2,
-                        text: "Pick a setting:",
+                        text: "Pick your preferred setting:",
                         options: [
-                            { label: "Fantasy World", value: "Fantasy" },
-                            { label: "Sci-Fi / Future", value: "Sci-Fi" },
-                            { label: "School Life", value: "Slice of Life" },
-                            { label: "Supernatural", value: "Supernatural" }
+                            { label: "Fantasy World", value: "Fantasy", icon: "🐉", desc: "Magic, dragons, and isekai." },
+                            { label: "Sci-Fi Future", value: "Sci-Fi", icon: "🚀", desc: "Space, mechs, and tech." },
+                            { label: "Modern / School", value: "Slice of Life", icon: "🏫", desc: "Relatable everyday life." },
+                            { label: "Supernatural", value: "Supernatural", icon: "👻", desc: "Ghosts, demons, and spirits." }
                         ]
                     },
                     {
                         id: 3,
-                        text: "Who do you want as a protagonist?",
+                        text: "What kind of protagonist do you like?",
                         options: [
-                            { label: "Overpowered Hero", value: "Action" },
-                            { label: "Underdog", value: "Drama" },
-                            { label: "Team of Friends", value: "Adventure" },
-                            { label: "Anti-hero", value: "Psychological" }
+                            { label: "Strong & Heroic", value: "Action", icon: "🦸", desc: "Saves the day, never gives up." },
+                            { label: "Underdog", value: "Sports", icon: "🌱", desc: "Starts weak, grows strong." },
+                            { label: "Smart & Strategic", value: "Psychological", icon: "🧠", desc: "Outwits enemies with mind games." },
+                            { label: "Romantic & Kind", value: "Romance", icon: "💖", desc: "Driven by love and relationships." }
                         ]
                     },
                     {
                         id: 4,
-                        text: "Preferred format?",
+                        text: "How much time do you have?",
                         options: [
-                            { label: "TV Series", value: "TV" },
-                            { label: "Movie", value: "MOVIE" },
-                            { label: "Short (OVA/ONA)", value: "OVA" },
-                            { label: "Any", value: "any" }
+                            { label: "Binge a Series", value: "TV", icon: "📺", desc: "Give me 12+ episodes." },
+                            { label: "Watch a Movie", value: "MOVIE", icon: "🎬", desc: "Done in 2 hours." },
+                            { label: "Short & Sweet", value: "OVA", icon: "⚡", desc: "Just a quick special." },
+                            { label: "Any length", value: "any", icon: "🤷", desc: "I don't mind." }
                         ]
                     },
                     {
                         id: 5,
-                        text: "Animation preference?",
+                        text: "Animation Style preference?",
                         options: [
-                            { label: "Modern (2020+)", value: "modern" },
-                            { label: "2010s Era", value: "2010s" },
-                            { label: "Classic (pre-2010)", value: "classic" },
-                            { label: "Don't care", value: "any" }
+                            { label: "Modern & Crisp", value: "modern", icon: "✨", desc: "2020s high budget visuals." },
+                            { label: "2010s Golden Era", value: "2010s", icon: "🌟", desc: "The standard anime look." },
+                            { label: "Classic Retro", value: "classic", icon: "📼", desc: "90s aesthetic and grain." },
+                            { label: "Story over Art", value: "any", icon: "📖", desc: "I care about plot more." }
                         ]
                     }
                 ];
 
                 if (state.quiz.currentStep >= questions.length) {
                     return `
-                        <div class="flex flex-col items-center fade-in">
-                            <h2 class="text-3xl font-bold mb-8">We found these for you!</h2>
+                        <div class="flex flex-col items-center fade-in max-w-6xl mx-auto">
+                            <div class="text-center mb-10">
+                                <div class="inline-block p-3 rounded-full bg-green-500/20 text-green-400 mb-4">
+                                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                </div>
+                                <h2 class="text-4xl font-bold mb-3">Your Personalized Picks</h2>
+                                <p class="text-slate-400">Based on your preferences, you'll love these.</p>
+                            </div>
+                            
                             <div id="quiz-results" class="grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
                                 ${getLoaderHtml()}
                             </div>
-                            <button onclick="resetQuiz()" class="mt-10 px-8 py-3 bg-gray-700 hover:bg-gray-600 rounded-full transition">Retake Quiz</button>
+                            
+                            <button onclick="resetQuiz()" class="mt-12 px-8 py-3 bg-slate-800 hover:bg-slate-700 rounded-full transition-all border border-slate-700 text-slate-300 font-medium flex items-center gap-2 group">
+                                <svg class="w-4 h-4 group-hover:-rotate-180 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                Start Over
+                            </button>
                         </div>
                     `;
                 }
 
                 const q = questions[state.quiz.currentStep];
+                const progress = ((state.quiz.currentStep) / questions.length) * 100;
+
                 return `
-                    <div class="max-w-2xl mx-auto mt-10 fade-in bg-gray-800 border border-gray-700 p-8 rounded-2xl shadow-xl">
-                        <div class="flex justify-between text-sm text-gray-400 mb-6">
-                            <span>Question ${state.quiz.currentStep + 1} of ${questions.length}</span>
-                            <span>${Math.round(((state.quiz.currentStep)/questions.length)*100)}% Complete</span>
-                        </div>
-                        <div class="w-full bg-gray-700 h-2 rounded-full mb-8">
-                            <div class="bg-indigo-500 h-2 rounded-full transition-all duration-500" style="width: ${((state.quiz.currentStep)/questions.length)*100}%"></div>
+                    <div class="max-w-3xl mx-auto mt-6 fade-in">
+                        <div class="mb-8">
+                            <div class="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                                <span>Question ${state.quiz.currentStep + 1} / ${questions.length}</span>
+                                <span>${Math.round(progress)}%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                                <div class="bg-gradient-to-r from-indigo-500 to-pink-500 h-2 rounded-full transition-all duration-500 ease-out" style="width: ${progress}%"></div>
+                            </div>
                         </div>
                         
-                        <h2 class="text-3xl font-bold mb-8">${q.text}</h2>
+                        <div class="glass-card p-8 md:p-10 rounded-3xl border border-slate-700/50 relative overflow-hidden">
+                            <!-- Background blob -->
+                            <div class="absolute -top-20 -right-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                            
+                            <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center">${q.text}</h2>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                ${q.options.map((opt, idx) => `
+                                    <button onclick="handleQuizAnswer('${opt.value}')" class="group relative flex items-center p-4 rounded-xl bg-slate-800/50 hover:bg-indigo-600/90 border border-slate-700 hover:border-indigo-500 transition-all duration-300 text-left hover:scale-[1.02] hover:shadow-xl hover:shadow-indigo-500/20 overflow-hidden" style="animation-delay: ${idx * 100}ms; animation: fadeIn 0.5s ease-out forwards; opacity: 0; transform: translateY(10px);">
+                                        <span class="text-3xl mr-4 bg-slate-900/50 w-12 h-12 flex items-center justify-center rounded-lg group-hover:bg-white/20 transition-colors">${opt.icon}</span>
+                                        <div class="flex-1 relative z-10">
+                                            <span class="block font-bold text-lg text-slate-200 group-hover:text-white">${opt.label}</span>
+                                            <span class="block text-xs text-slate-400 group-hover:text-indigo-100">${opt.desc}</span>
+                                        </div>
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
                         
-                        <div class="grid grid-cols-1 gap-4">
-                            ${q.options.map(opt => `
-                                <button onclick="handleQuizAnswer('${opt.value}')" class="quiz-option text-left p-5 rounded-xl bg-gray-700 hover:bg-indigo-600 transition-all duration-300 flex justify-between items-center group shadow-md hover:shadow-xl hover:scale-[1.02]">
-                                    <span class="font-medium text-lg relative z-10">${opt.label}</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            `).join('')}
+                         <div class="text-center mt-6">
+                            <button onclick="navigate('home')" class="text-slate-500 hover:text-slate-300 text-sm underline decoration-slate-700 hover:decoration-slate-400 underline-offset-4">Cancel Quiz</button>
                         </div>
                     </div>
                 `;
             },
             browse: () => `
-                <div class="fade-in">
-                    <h2 class="text-3xl font-bold mb-6">Browse Anime</h2>
-                    
-                    <div class="relative mb-4">
-                        <input type="text" id="search-input" placeholder="Search by title..." class="bg-gray-800 border border-gray-700 text-white rounded-lg pl-12 pr-4 py-4 w-full focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all" onkeyup="debounceSearch(event)">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute left-4 top-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        ${state.browse.search ? '<button onclick="clearSearch()" class="absolute right-3 top-3 bg-gray-700 hover:bg-gray-600 rounded-full p-1.5 transition">×</button>' : ''}
-                    </div>
-                    
-                    <button onclick="toggleFilters()" class="mb-4 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition-all flex items-center gap-2 text-sm font-medium">
-                        <span id="filter-toggle-text">Show Advanced Filters</span>
-                        <span id="active-filters-count" class="hidden ml-2 px-2 py-0.5 bg-indigo-600 rounded-full text-xs">0</span>
-                    </button>
-                    
-                    <div id="advanced-filters" class="hidden bg-gray-800 border border-gray-700 rounded-xl p-6 mb-6 space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-2">Genre</label>
-                                <select id="genre-filter" onchange="handleFilterChange()" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
-                                    <option value="">All Genres</option>
-                                    ${state.genres.map(g => `<option value="${g}">${g}</option>`).join('')}
-                                </select>
+                <div class="fade-in space-y-6">
+                    <!-- Search & Filter Bar -->
+                    <div class="glass p-4 rounded-2xl border border-slate-700/50 sticky top-20 z-30 shadow-xl backdrop-blur-xl">
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="relative flex-grow group">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-slate-400 group-focus-within:text-indigo-400 transition-colors" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <input type="text" id="search-input" placeholder="Search anime..." class="block w-full pl-10 pr-10 py-3 border border-slate-600 rounded-xl leading-5 bg-slate-800/50 text-slate-300 placeholder-slate-500 focus:outline-none focus:bg-slate-800 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all sm:text-sm" value="${state.browse.search}" onkeyup="debounceSearch(event)">
+                                ${state.browse.search ? '<button onclick="clearSearch()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-white"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>' : ''}
                             </div>
                             
-                            <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-2">Format</label>
-                                <select id="format-filter" onchange="handleFilterChange()" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
-                                    <option value="">All Formats</option>
-                                    <option value="TV">TV Series</option>
-                                    <option value="MOVIE">Movie</option>
-                                    <option value="OVA">OVA</option>
-                                    <option value="ONA">ONA</option>
-                                    <option value="SPECIAL">Special</option>
-                                </select>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-2">Status</label>
-                                <select id="status-filter" onchange="handleFilterChange()" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
-                                    <option value="">All Status</option>
-                                    <option value="RELEASING">Currently Airing</option>
-                                    <option value="FINISHED">Completed</option>
-                                    <option value="NOT_YET_RELEASED">Upcoming</option>
-                                </select>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-2">Min Score</label>
-                                <select id="score-filter" onchange="handleFilterChange()" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
-                                    <option value="">Any Score</option>
-                                    <option value="90">90+ (Masterpiece)</option>
-                                    <option value="80">80+ (Excellent)</option>
-                                    <option value="70">70+ (Good)</option>
-                                    <option value="60">60+ (Fine)</option>
-                                </select>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-2">Year</label>
-                                <input type="number" id="year-filter" placeholder="e.g., 2023" min="1960" max="2025" onchange="handleFilterChange()" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
-                            </div>
+                            <button onclick="toggleFilters()" class="flex items-center justify-center gap-2 px-6 py-3 bg-slate-800/80 hover:bg-slate-700 border border-slate-600 rounded-xl text-slate-300 hover:text-white transition-all font-medium whitespace-nowrap">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                                Filters
+                                <span id="active-filters-count" class="hidden ml-1 px-2 py-0.5 bg-indigo-500 text-white text-xs font-bold rounded-full">0</span>
+                            </button>
                         </div>
                         
-                        <div class="border-t border-gray-700 pt-4">
-                            <label class="block text-sm font-medium text-gray-400 mb-3">Sort By</label>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                <button onclick="setSortOption('POPULARITY_DESC')" id="sort-popularity" class="sort-btn px-4 py-3 bg-indigo-600 border border-indigo-500 rounded-lg transition-all text-sm font-medium">Most Popular</button>
-                                <button onclick="setSortOption('SCORE_DESC')" id="sort-score" class="sort-btn px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg transition-all text-sm font-medium">Top Rated</button>
-                                <button onclick="setSortOption('START_DATE_DESC')" id="sort-date" class="sort-btn px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg transition-all text-sm font-medium">Newest</button>
-                                <button onclick="setSortOption('TITLE_ROMAJI')" id="sort-title" class="sort-btn px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg transition-all text-sm font-medium">A-Z</button>
+                        <!-- Advanced Filters Panel -->
+                        <div id="advanced-filters" class="hidden mt-4 pt-4 border-t border-slate-700/50 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                            <select id="genre-filter" onchange="handleFilterChange()" class="bg-slate-800 border border-slate-600 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                                <option value="">All Genres</option>
+                                ${state.genres.map(g => `<option value="${g}" ${state.browse.genre === g ? 'selected' : ''}>${g}</option>`).join('')}
+                            </select>
+                            
+                            <select id="format-filter" onchange="handleFilterChange()" class="bg-slate-800 border border-slate-600 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                                <option value="">All Formats</option>
+                                <option value="TV" ${state.browse.format === 'TV' ? 'selected' : ''}>TV Series</option>
+                                <option value="MOVIE" ${state.browse.format === 'MOVIE' ? 'selected' : ''}>Movie</option>
+                                <option value="OVA" ${state.browse.format === 'OVA' ? 'selected' : ''}>OVA</option>
+                                <option value="ONA" ${state.browse.format === 'ONA' ? 'selected' : ''}>ONA</option>
+                            </select>
+                            
+                            <select id="status-filter" onchange="handleFilterChange()" class="bg-slate-800 border border-slate-600 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                                <option value="">All Status</option>
+                                <option value="RELEASING" ${state.browse.status === 'RELEASING' ? 'selected' : ''}>Airing</option>
+                                <option value="FINISHED" ${state.browse.status === 'FINISHED' ? 'selected' : ''}>Completed</option>
+                                <option value="NOT_YET_RELEASED" ${state.browse.status === 'NOT_YET_RELEASED' ? 'selected' : ''}>Upcoming</option>
+                            </select>
+                            
+                            <select id="score-filter" onchange="handleFilterChange()" class="bg-slate-800 border border-slate-600 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                                <option value="">Any Score</option>
+                                <option value="85" ${state.browse.minScore === '85' ? 'selected' : ''}>85+ (Masterpiece)</option>
+                                <option value="80" ${state.browse.minScore === '80' ? 'selected' : ''}>80+ (Great)</option>
+                                <option value="70" ${state.browse.minScore === '70' ? 'selected' : ''}>70+ (Good)</option>
+                            </select>
+                            
+                            <input type="number" id="year-filter" placeholder="Year (e.g. 2023)" min="1970" max="2025" value="${state.browse.year}" onchange="handleFilterChange()" class="bg-slate-800 border border-slate-600 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                            
+                            <div class="col-span-full pt-2 border-t border-slate-700/50 flex flex-col md:flex-row justify-between items-center gap-4">
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="text-xs text-slate-500 uppercase font-bold py-2">Sort By:</span>
+                                    <button onclick="setSortOption('POPULARITY_DESC')" class="sort-btn px-3 py-1 rounded-full text-xs font-medium border border-slate-600 ${state.browse.sort === 'POPULARITY_DESC' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">Popular</button>
+                                    <button onclick="setSortOption('SCORE_DESC')" class="sort-btn px-3 py-1 rounded-full text-xs font-medium border border-slate-600 ${state.browse.sort === 'SCORE_DESC' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">Top Rated</button>
+                                    <button onclick="setSortOption('START_DATE_DESC')" class="sort-btn px-3 py-1 rounded-full text-xs font-medium border border-slate-600 ${state.browse.sort === 'START_DATE_DESC' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">Newest</button>
+                                </div>
+                                <button onclick="clearAllFilters()" class="text-xs text-red-400 hover:text-red-300 font-medium">Clear All Filters</button>
                             </div>
-                        </div>
-                        
-                        <div class="flex justify-end gap-3 pt-4 border-t border-gray-700">
-                            <button onclick="clearAllFilters()" class="px-6 py-2 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-lg transition-all text-sm font-medium">Clear All Filters</button>
-                            <button onclick="toggleFilters()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all text-sm font-medium">Apply Filters</button>
                         </div>
                     </div>
                     
-                    <div id="results-info" class="mb-4 flex flex-wrap items-center gap-2 text-sm text-gray-400"></div>
-                    
-                    <div id="browse-results" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                    <!-- Results Grid -->
+                    <div id="browse-results" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                         ${getLoaderHtml()}
                     </div>
                     
-                    <div class="flex justify-center items-center mt-10 gap-4">
-                        <button onclick="changePage(-1)" id="prev-page" class="px-6 py-3 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 hover:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium">
-                            <span class="flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                                </svg>
-                                Previous
-                            </span>
+                    <!-- Pagination -->
+                    <div class="flex justify-center items-center mt-12 gap-4">
+                        <button onclick="changePage(-1)" id="prev-page" class="w-12 h-12 flex items-center justify-center rounded-full bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                         </button>
-                        <span id="page-indicator" class="px-6 py-3 bg-gray-800 border border-gray-700 rounded-lg font-bold text-indigo-400">Page 1</span>
-                        <button onclick="changePage(1)" id="next-page" class="px-6 py-3 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 hover:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium">
-                            <span class="flex items-center gap-2">
-                                Next
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </span>
+                        <span id="page-indicator" class="text-slate-300 font-medium text-lg min-w-[80px] text-center">Page 1</span>
+                        <button onclick="changePage(1)" id="next-page" class="w-12 h-12 flex items-center justify-center rounded-full bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                         </button>
                     </div>
                 </div>
-            `
+            `,
+            schedule: () => {
+                const today = new Date();
+                // Normalize today to start of day
+                today.setHours(0,0,0,0);
+                
+                // If state has selection, use it, otherwise default to today
+                let selectedDate = today;
+                if (state.schedule.selectedDate) {
+                    selectedDate = new Date(state.schedule.selectedDate * 1000);
+                } else {
+                    state.schedule.selectedDate = Math.floor(today.getTime() / 1000);
+                }
+                
+                // Generate 7 days starting from today
+                const days = [];
+                for(let i = 0; i < 7; i++) {
+                    const d = new Date(today);
+                    d.setDate(today.getDate() + i);
+                    days.push(d);
+                }
+                
+                const selectedTimestamp = state.schedule.selectedDate;
+
+                return `
+                <div class="fade-in space-y-8">
+                    <div class="text-center mb-8">
+                        <h2 class="text-4xl font-bold mb-2">Airing Schedule</h2>
+                        <p class="text-slate-400">Don't miss new episodes airing this week.</p>
+                    </div>
+                    
+                    <!-- Day Selector -->
+                    <div class="flex overflow-x-auto pb-4 gap-3 md:justify-center no-scrollbar snap-x px-4">
+                        ${days.map(d => {
+                            const timestamp = Math.floor(d.getTime() / 1000);
+                            // Check if selected (ignoring time components safely by comparing timestamps roughly or just setting both to midnight which we did)
+                            const isSelected = timestamp === selectedTimestamp;
+                            const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+                            const dayNum = d.getDate();
+                            const isToday = d.getTime() === today.getTime();
+                            
+                            return `
+                                <button onclick="selectScheduleDay(${timestamp})" class="snap-center flex flex-col items-center justify-center min-w-[4.5rem] h-20 rounded-2xl border transition-all ${isSelected ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/25 scale-105' : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:bg-slate-800 hover:border-slate-600'}">
+                                    <span class="text-xs font-bold uppercase mb-1 ${isSelected ? 'text-indigo-200' : 'text-slate-500'}">${isToday ? 'Today' : dayName}</span>
+                                    <span class="text-2xl font-bold">${dayNum}</span>
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+                    
+                    <!-- Schedule List -->
+                    <div id="schedule-container" class="max-w-4xl mx-auto min-h-[50vh] space-y-4">
+                        ${getLoaderHtml()}
+                    </div>
+                </div>
+                `;
+            }
         };
 
-        async function init() {
-            navigate('home');
-            loadTopAnime();
-        }
+        // -- Core Logic --
 
-        function navigate(page) {
-            state.currentPage = page;
-            document.getElementById('app').innerHTML = views[page]();
-            
-            if (page === 'home') loadTopAnime();
-            else if (page === 'browse') loadBrowseData();
-            else if (page === 'quiz' && state.quiz.currentStep >= 5) fetchQuizResults();
-            
-            window.scrollTo(0, 0);
-        }
-
-        function toggleMobileMenu() {
-            document.getElementById('mobile-menu').classList.toggle('hidden');
-        }
-
-        function getLoaderHtml() {
-            return '<div class="col-span-full flex justify-center py-20"><div class="loader"></div></div>';
-        }
-
-        function createAnimeCard(anime) {
-            const title = anime.title?.english || anime.title?.romaji || 'Unknown';
+        function createAnimeCard(anime, index = 0) {
+            const title = anime.title?.english || anime.title?.romaji || 'Unknown Title';
             const image = anime.coverImage?.large || anime.coverImage?.medium;
-            const score = anime.averageScore ? `⭐ ${(anime.averageScore / 10).toFixed(1)}` : 'N/A';
-            const year = anime.seasonYear || anime.startDate?.year || 'Unknown';
+            const score = anime.averageScore ? Math.round(anime.averageScore) : null;
+            const year = anime.seasonYear || anime.startDate?.year || '';
             
+            let scoreColor = 'text-slate-400';
+            if (score >= 80) scoreColor = 'text-green-400';
+            else if (score >= 65) scoreColor = 'text-yellow-400';
+            else if (score) scoreColor = 'text-orange-400';
+
+            // Stagger animation based on index
+            const staggerClass = index < 8 ? `style="animation-delay: ${index * 50}ms"` : '';
+
             return `
-                <div onclick="openModal(${anime.id})" class="anime-card group cursor-pointer relative bg-gray-800 rounded-xl overflow-hidden shadow-lg transition-all duration-300">
-                    <div class="aspect-[2/3] overflow-hidden">
-                        <img src="${image}" alt="${title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                            <button class="bg-indigo-600 text-white py-2 px-4 rounded-full text-sm font-bold shadow-lg hover:bg-indigo-500 transition">View Details</button>
+                <div onclick="openModal(${anime.id})" class="anime-card w-full group relative bg-slate-800 rounded-xl overflow-hidden shadow-lg cursor-pointer hover:shadow-indigo-500/20 fade-in h-full flex flex-col" ${staggerClass}>
+                    <div class="aspect-[2/3] overflow-hidden relative flex-shrink-0">
+                        <img src="${image}" alt="${title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        
+                        <!-- Gradient Overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                        
+                        <!-- Hover Overlay Info -->
+                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <span class="bg-indigo-600/90 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-bold transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">View Info</span>
                         </div>
+
+                        <!-- Score Badge -->
+                        ${score ? `<div class="absolute top-2 right-2 bg-black/60 backdrop-blur-md text-xs font-bold px-2 py-1 rounded flex items-center gap-1 ${scoreColor}">
+                            <svg class="w-3 h-3 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            ${score}%
+                        </div>` : ''}
                     </div>
-                    <div class="p-3">
-                        <h4 class="font-bold text-white truncate text-sm md:text-base" title="${title}">${title}</h4>
-                        <div class="flex justify-between items-center mt-1 text-xs text-gray-400">
+                    
+                    <div class="p-3 flex flex-col flex-grow justify-between">
+                        <h4 class="font-semibold text-white text-sm leading-tight line-clamp-2 mb-1 group-hover:text-indigo-400 transition-colors" title="${title}">${title}</h4>
+                        <div class="flex justify-between items-center text-xs text-slate-500 mt-auto">
                             <span>${year}</span>
-                            <span class="text-yellow-400 font-bold">${score}</span>
+                            <span>${anime.format || 'TV'}</span>
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        async function loadTopAnime() {
-            const container = document.getElementById('top-airing-container');
-            if (!container) return;
+        function navigate(page) {
+            state.currentPage = page;
+            updateActiveNav();
+            document.getElementById('app').innerHTML = views[page]();
+            window.scrollTo(0, 0);
             
+            if (page === 'home') loadHomeData();
+            else if (page === 'browse') loadBrowseData();
+            else if (page === 'schedule') loadScheduleData();
+            else if (page === 'quiz' && state.quiz.currentStep >= 5) fetchQuizResults();
+        }
+
+        function scrollCarousel(id, direction) {
+            const container = document.getElementById(id);
+            if (container) {
+                const scrollAmount = container.clientWidth * 0.75;
+                container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+            }
+        }
+
+        function createCompactAnimeCard(anime) {
+            const title = anime.title?.english || anime.title?.romaji || 'Unknown Title';
+            const image = anime.coverImage?.large || anime.coverImage?.medium;
+            const year = anime.startDate?.year || anime.seasonYear || '';
+            const date = anime.startDate ? `${anime.startDate.year}-${String(anime.startDate.month).padStart(2, '0')}` : year;
+            
+            return `
+                <div onclick="openModal(${anime.id})" class="flex-shrink-0 w-48 group relative bg-slate-800 rounded-xl overflow-hidden cursor-pointer hover:shadow-indigo-500/20 transition-all duration-300 hover:-translate-y-2">
+                    <div class="aspect-[2/3] overflow-hidden relative">
+                        <img src="${image}" alt="${title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-80"></div>
+                        <div class="absolute bottom-0 left-0 p-3 w-full">
+                             <p class="text-indigo-300 text-xs font-bold mb-1">${anime.format || 'TV'}</p>
+                             <p class="text-white text-sm font-bold line-clamp-2 leading-tight">${title}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadHomeData() {
+            const trendingContainer = document.getElementById('trending-container');
+            const upcomingContainer = document.getElementById('upcoming-container');
+            const topRatedContainer = document.getElementById('top-rated-container');
+            const popularContainer = document.getElementById('popular-container');
+
+            if (!trendingContainer) return;
+
             const query = `
                 query {
-                    Page(page: 1, perPage: 10) {
+                    Trending: Page(page: 1, perPage: 15) {
                         media(type: ANIME, sort: TRENDING_DESC) {
                             id
                             title { romaji english }
                             coverImage { large medium }
                             averageScore
                             seasonYear
+                            format
+                            startDate { year }
+                        }
+                    }
+                    Upcoming: Page(page: 1, perPage: 10) {
+                        media(type: ANIME, sort: POPULARITY_DESC, status: NOT_YET_RELEASED) {
+                            id
+                            title { romaji english }
+                            coverImage { large medium }
+                            seasonYear
+                            format
+                            startDate { year month }
+                        }
+                    }
+                    TopRated: Page(page: 1, perPage: 10) {
+                        media(type: ANIME, sort: SCORE_DESC) {
+                            id
+                            title { romaji english }
+                            coverImage { large medium }
+                            seasonYear
+                            format
+                            startDate { year month }
+                        }
+                    }
+                    Popular: Page(page: 1, perPage: 15) {
+                        media(type: ANIME, sort: POPULARITY_DESC) {
+                            id
+                            title { romaji english }
+                            coverImage { large medium }
+                            averageScore
+                            seasonYear
+                            format
                             startDate { year }
                         }
                     }
                 }
             `;
             
-            try {
-                const data = await anilistQuery(query);
-                container.innerHTML = data.Page.media.map(createAnimeCard).join('');
-            } catch (error) {
-                container.innerHTML = '<p class="text-red-400 col-span-full text-center">Failed to load anime.</p>';
-            }
-        }
-
-        let searchTimeout;
-        function debounceSearch(e) {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                state.browse.search = e.target.value;
-                state.browse.page = 1;
-                loadBrowseData();
-            }, 500);
-        }
-
-        function handleFilterChange() {
-            state.browse.genre = document.getElementById('genre-filter')?.value || '';
-            state.browse.format = document.getElementById('format-filter')?.value || '';
-            state.browse.status = document.getElementById('status-filter')?.value || '';
-            state.browse.minScore = document.getElementById('score-filter')?.value || '';
-            state.browse.year = document.getElementById('year-filter')?.value || '';
-            state.browse.page = 1;
-            updateActiveFiltersCount();
-            loadBrowseData();
-        }
-
-        function toggleFilters() {
-            const panel = document.getElementById('advanced-filters');
-            const text = document.getElementById('filter-toggle-text');
+            const data = await anilistQuery(query);
             
-            if (panel.classList.contains('hidden')) {
-                panel.classList.remove('hidden');
-                text.textContent = 'Hide Advanced Filters';
+            if (data) {
+                // Trending
+                trendingContainer.innerHTML = data.Trending.media.map((anime, idx) => `
+                    <div class="flex-shrink-0 w-48 md:w-56 snap-start">
+                        ${createAnimeCard(anime, idx)}
+                    </div>
+                `).join('');
+
+                // Popular
+                popularContainer.innerHTML = data.Popular.media.map((anime, idx) => `
+                    <div class="flex-shrink-0 w-48 md:w-56 snap-start">
+                        ${createAnimeCard(anime, idx)}
+                    </div>
+                `).join('');
+
+                // Upcoming (Marquee)
+                const upcomingCards = data.Upcoming.media.map(createCompactAnimeCard).join('');
+                upcomingContainer.innerHTML = upcomingCards + upcomingCards + upcomingCards;
+
+                // Top Rated (Marquee Reverse)
+                const topRatedCards = data.TopRated.media.map(createCompactAnimeCard).join('');
+                if (topRatedContainer) {
+                    topRatedContainer.innerHTML = topRatedCards + topRatedCards + topRatedCards;
+                }
             } else {
-                panel.classList.add('hidden');
-                text.textContent = 'Show Advanced Filters';
+                const err = '<p class="col-span-full text-center text-red-400">Failed to load data.</p>';
+                if(trendingContainer) trendingContainer.innerHTML = err;
             }
-        }
-
-        function clearSearch() {
-            state.browse.search = '';
-            document.getElementById('search-input').value = '';
-            state.browse.page = 1;
-            loadBrowseData();
-        }
-
-        function clearAllFilters() {
-            state.browse = { page: 1, search: '', genre: '', format: '', status: '', sort: 'POPULARITY_DESC', minScore: '', year: '' };
-            
-            ['search-input', 'genre-filter', 'format-filter', 'status-filter', 'score-filter', 'year-filter'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.value = '';
-            });
-            
-            document.querySelectorAll('.sort-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'border-indigo-500');
-                btn.classList.add('bg-gray-700', 'border-gray-600');
-            });
-            
-            const defaultSort = document.getElementById('sort-popularity');
-            if (defaultSort) {
-                defaultSort.classList.add('bg-indigo-600', 'border-indigo-500');
-                defaultSort.classList.remove('bg-gray-700', 'border-gray-600');
-            }
-            
-            updateActiveFiltersCount();
-            loadBrowseData();
-        }
-
-        function setSortOption(sort) {
-            state.browse.sort = sort;
-            state.browse.page = 1;
-            
-            document.querySelectorAll('.sort-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'border-indigo-500');
-                btn.classList.add('bg-gray-700', 'border-gray-600');
-            });
-            
-            const activeBtn = document.querySelector(`[onclick="setSortOption('${sort}')"]`);
-            if (activeBtn) {
-                activeBtn.classList.add('bg-indigo-600', 'border-indigo-500');
-                activeBtn.classList.remove('bg-gray-700', 'border-gray-600');
-            }
-            
-            loadBrowseData();
-        }
-
-        function updateActiveFiltersCount() {
-            const count = [state.browse.genre, state.browse.format, state.browse.status, state.browse.minScore, state.browse.year].filter(v => v).length;
-            const badge = document.getElementById('active-filters-count');
-            if (badge) {
-                badge.textContent = count;
-                badge.classList.toggle('hidden', count === 0);
-            }
-        }
-
-        function changePage(delta) {
-            state.browse.page += delta;
-            if (state.browse.page < 1) state.browse.page = 1;
-            loadBrowseData();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         async function loadBrowseData() {
             const container = document.getElementById('browse-results');
             const indicator = document.getElementById('page-indicator');
+            const activeFiltersCount = document.getElementById('active-filters-count');
+            
             if (!container) return;
             
             container.innerHTML = getLoaderHtml();
             if (indicator) indicator.textContent = `Page ${state.browse.page}`;
+            
+            // Count active filters
+            const count = [state.browse.genre, state.browse.format, state.browse.status, state.browse.minScore, state.browse.year].filter(v => v).length;
+            if(activeFiltersCount) {
+                activeFiltersCount.textContent = count;
+                activeFiltersCount.classList.toggle('hidden', count === 0);
+            }
 
             let filters = [];
             if (state.browse.search) filters.push(`search: "${state.browse.search}"`);
@@ -630,35 +954,198 @@
                             coverImage { large medium }
                             averageScore
                             seasonYear
+                            format
                             startDate { year }
                         }
                     }
                 }
             `;
             
-            try {
-                const data = await anilistQuery(query);
-                
+            const data = await anilistQuery(query);
+            if (data) {
                 if (data.Page.media.length > 0) {
-                    container.innerHTML = data.Page.media.map(createAnimeCard).join('');
+                    container.innerHTML = data.Page.media.map((anime, idx) => createAnimeCard(anime, idx)).join('');
                     
                     const prevBtn = document.getElementById('prev-page');
                     const nextBtn = document.getElementById('next-page');
                     if (prevBtn) prevBtn.disabled = state.browse.page <= 1;
                     if (nextBtn) nextBtn.disabled = !data.Page.pageInfo.hasNextPage;
                 } else {
-                    container.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400 text-xl">No results found.</div>';
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-12">
+                            <div class="text-4xl mb-4">😔</div>
+                            <h3 class="text-xl font-bold text-white mb-2">No results found</h3>
+                            <p class="text-slate-400">Try adjusting your filters or search query.</p>
+                            <button onclick="clearAllFilters()" class="mt-4 px-6 py-2 bg-indigo-600 rounded-full text-white text-sm font-medium hover:bg-indigo-500 transition">Reset Filters</button>
+                        </div>
+                    `;
                 }
-            } catch (error) {
-                container.innerHTML = '<p class="text-red-400 col-span-full text-center">Error loading data.</p>';
+            } else {
+                container.innerHTML = '<p class="col-span-full text-center text-red-400">Error loading data.</p>';
             }
+        }
+
+        function selectScheduleDay(timestamp) {
+            state.schedule.selectedDate = timestamp;
+            navigate('schedule');
+        }
+
+        async function loadScheduleData() {
+            const container = document.getElementById('schedule-container');
+            if (!container) return;
+            
+            container.innerHTML = getLoaderHtml();
+            
+            const selectedTimestamp = state.schedule.selectedDate || Math.floor(new Date().setHours(0,0,0,0) / 1000);
+            const startOfDay = selectedTimestamp;
+            const endOfDay = selectedTimestamp + 86400; // + 24 hours
+            
+            const query = `
+                query {
+                    Page(page: 1, perPage: 50) {
+                        airingSchedules(airingAt_greater: ${startOfDay}, airingAt_lesser: ${endOfDay}, sort: TIME) {
+                            id
+                            airingAt
+                            episode
+                            media {
+                                id
+                                title { romaji english }
+                                coverImage { medium large }
+                                format
+                                averageScore
+                                isAdult
+                            }
+                        }
+                    }
+                }
+            `;
+            
+            const data = await anilistQuery(query);
+            
+            if (data && data.Page.airingSchedules.length > 0) {
+                // Filter out adult content just in case
+                const schedules = data.Page.airingSchedules.filter(s => !s.media.isAdult);
+                
+                if (schedules.length === 0) {
+                     container.innerHTML = `
+                        <div class="text-center py-12">
+                            <div class="text-4xl mb-4">💤</div>
+                            <h3 class="text-xl font-bold text-white">No episodes airing</h3>
+                            <p class="text-slate-400 mt-2">Looks like a quiet day for anime releases.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = schedules.map((schedule, idx) => {
+                    const date = new Date(schedule.airingAt * 1000);
+                    const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const anime = schedule.media;
+                    const title = anime.title.english || anime.title.romaji;
+                    
+                    return `
+                        <div onclick="openModal(${anime.id})" class="group flex items-center gap-4 p-4 bg-slate-800/50 hover:bg-slate-800 rounded-xl border border-slate-700/50 hover:border-indigo-500/50 transition-all cursor-pointer fade-in" style="animation-delay: ${idx * 50}ms">
+                            <div class="flex-shrink-0 w-16 text-center">
+                                <span class="block text-lg font-bold text-white">${timeString}</span>
+                                <span class="block text-xs text-slate-500 font-medium uppercase">Ep ${schedule.episode}</span>
+                            </div>
+                            
+                            <div class="flex-shrink-0 w-16 h-24 relative rounded-lg overflow-hidden shadow-md bg-slate-700">
+                                <img src="${anime.coverImage.medium}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            </div>
+                            
+                            <div class="flex-grow min-w-0">
+                                <h4 class="text-white font-bold text-lg truncate group-hover:text-indigo-400 transition-colors">${title}</h4>
+                                <div class="flex items-center gap-3 text-sm text-slate-400 mt-1">
+                                    <span>${anime.format}</span>
+                                    ${anime.averageScore ? `<span class="flex items-center gap-1 text-green-400"><svg class="w-3 h-3 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>${anime.averageScore}%</span>` : ''}
+                                </div>
+                            </div>
+                            
+                             <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 transform duration-300 hidden sm:block">
+                                <svg class="w-6 h-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-4xl mb-4">💤</div>
+                        <h3 class="text-xl font-bold text-white">No episodes airing</h3>
+                        <p class="text-slate-400 mt-2">Looks like a quiet day for anime releases.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // -- Event Handlers --
+
+        let searchTimeout;
+        function debounceSearch(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                state.browse.search = e.target.value;
+                state.browse.page = 1;
+                loadBrowseData();
+            }, 600);
+        }
+
+        function clearSearch() {
+            state.browse.search = '';
+            const input = document.getElementById('search-input');
+            if(input) input.value = '';
+            state.browse.page = 1;
+            loadBrowseData();
+        }
+
+        function toggleFilters() {
+            const panel = document.getElementById('advanced-filters');
+            panel.classList.toggle('hidden');
+        }
+
+        function handleFilterChange() {
+            state.browse.genre = document.getElementById('genre-filter')?.value || '';
+            state.browse.format = document.getElementById('format-filter')?.value || '';
+            state.browse.status = document.getElementById('status-filter')?.value || '';
+            state.browse.minScore = document.getElementById('score-filter')?.value || '';
+            state.browse.year = document.getElementById('year-filter')?.value || '';
+            state.browse.page = 1;
+            loadBrowseData();
+        }
+
+        function clearAllFilters() {
+            state.browse = { ...state.browse, page: 1, search: '', genre: '', format: '', status: '', minScore: '', year: '', sort: 'POPULARITY_DESC' };
+            
+            // Reset UI elements
+            const ids = ['search-input', 'genre-filter', 'format-filter', 'status-filter', 'score-filter', 'year-filter'];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.value = '';
+            });
+            
+            loadBrowseData();
+        }
+
+        function setSortOption(sort) {
+            state.browse.sort = sort;
+            state.browse.page = 1;
+            loadBrowseData();
+        }
+
+        function changePage(delta) {
+            state.browse.page += delta;
+            if (state.browse.page < 1) state.browse.page = 1;
+            loadBrowseData();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function handleQuizAnswer(value) {
             state.quiz.answers.push(value);
             state.quiz.currentStep++;
-            document.getElementById('app').innerHTML = views.quiz();
-            if (state.quiz.currentStep >= 5) fetchQuizResults();
+            navigate('quiz');
         }
 
         function resetQuiz() {
@@ -670,63 +1157,44 @@
             const container = document.getElementById('quiz-results');
             if (!container) return;
             
-            const genres = state.quiz.answers.filter(a => state.genres.includes(a));
-            const genreFilter = genres.length > 0 ? `genre_in: ["${genres[0]}"]` : '';
+            // Extract logic
+            const genre = state.quiz.answers.find(a => state.genres.includes(a));
+            const formatAnswer = state.quiz.answers[3];
+            const formatFilter = (formatAnswer && formatAnswer !== 'any') ? `format: ${formatAnswer}` : '';
             
             const query = `
                 query {
-                    Page(page: 1, perPage: 8) {
-                        media(type: ANIME, sort: SCORE_DESC, averageScore_greater: 70 ${genreFilter ? ', ' + genreFilter : ''}) {
+                    Page(page: 1, perPage: 12) {
+                        media(type: ANIME, sort: SCORE_DESC, averageScore_greater: 70 ${genre ? `, genre_in: ["${genre}"]` : ''} ${formatFilter ? `, ${formatFilter}` : ''}) {
                             id
                             title { romaji english }
                             coverImage { large medium }
                             averageScore
                             seasonYear
+                            format
                             startDate { year }
                         }
                     }
                 }
             `;
             
-            try {
-                const data = await anilistQuery(query);
+            const data = await anilistQuery(query);
+            if (data) {
+                // Simple randomization
                 const shuffled = data.Page.media.sort(() => 0.5 - Math.random()).slice(0, 4);
-                container.innerHTML = shuffled.map(createAnimeCard).join('');
-            } catch (e) {
-                container.innerHTML = '<p class="text-red-400 col-span-full text-center">Could not calculate results.</p>';
+                container.innerHTML = shuffled.map((anime, idx) => createAnimeCard(anime, idx)).join('');
+            } else {
+                container.innerHTML = '<p class="col-span-full text-center text-red-400">Could not calculate results.</p>';
             }
         }
 
-        async function surpriseMe() {
-            try {
-                let filters = [];
-                if (state.surprise.genre) filters.push(`genre_in: ["${state.surprise.genre}"]`);
-                if (state.surprise.format) filters.push(`format: ${state.surprise.format}`);
-                if (state.surprise.minScore) filters.push(`averageScore_greater: ${state.surprise.minScore}`);
-                if (state.surprise.year) filters.push(`seasonYear: ${state.surprise.year}`);
-                
-                const page = Math.floor(Math.random() * 5) + 1;
-                const query = `
-                    query {
-                        Page(page: ${page}, perPage: 20) {
-                            media(type: ANIME, sort: POPULARITY_DESC ${filters.length ? ', ' + filters.join(', ') : ''}) {
-                                id
-                            }
-                        }
-                    }
-                `;
-                
-                const data = await anilistQuery(query);
-                if (data.Page.media.length > 0) {
-                    const random = data.Page.media[Math.floor(Math.random() * data.Page.media.length)];
-                    openModal(random.id);
-                } else {
-                    alert("No anime found with these filters.");
-                }
-            } catch (e) {
-                alert("Surprise failed! Try again.");
-            }
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
         }
+
+        // -- Modal Logic --
+
+        let currentAnimeCharacters = [];
 
         async function openModal(id) {
             const overlay = document.getElementById('modal-overlay');
@@ -736,7 +1204,19 @@
             content.classList.remove('scale-95');
             content.classList.add('scale-100');
             
-            content.innerHTML = '<div class="p-10 flex justify-center"><div class="loader"></div></div>';
+            // Skeleton Loading State for Modal
+            content.innerHTML = `
+                <div class="h-64 bg-slate-800 animate-pulse rounded-t-2xl"></div>
+                <div class="p-8">
+                    <div class="h-8 w-1/2 bg-slate-800 animate-pulse rounded mb-4"></div>
+                    <div class="h-4 w-1/3 bg-slate-800 animate-pulse rounded mb-8"></div>
+                    <div class="space-y-2">
+                        <div class="h-4 w-full bg-slate-800 animate-pulse rounded"></div>
+                        <div class="h-4 w-full bg-slate-800 animate-pulse rounded"></div>
+                        <div class="h-4 w-2/3 bg-slate-800 animate-pulse rounded"></div>
+                    </div>
+                </div>
+            `;
             
             const query = `
                 query {
@@ -765,7 +1245,7 @@
                                 node {
                                     id
                                     title { romaji english }
-                                    coverImage { large medium }
+                                    coverImage { medium }
                                     format
                                     averageScore
                                 }
@@ -779,6 +1259,9 @@
                                     name { full }
                                     image { large }
                                 }
+                                voiceActors(language: JAPANESE) {
+                                    name { full }
+                                }
                             }
                         }
                         recommendations(perPage: 6, sort: RATING_DESC) {
@@ -786,8 +1269,7 @@
                                 mediaRecommendation {
                                     id
                                     title { romaji english }
-                                    coverImage { large medium }
-                                    averageScore
+                                    coverImage { large }
                                 }
                             }
                         }
@@ -796,156 +1278,173 @@
                 }
             `;
             
-            try {
-                const data = await anilistQuery(query);
-                const anime = data.Media;
-                
-                const title = anime.title.english || anime.title.romaji;
-                const image = anime.coverImage.extraLarge || anime.coverImage.large;
-                const bgImage = anime.bannerImage || image;
-                const description = anime.description?.replace(/<[^>]*>/g, '') || 'No description available.';
-                const score = anime.averageScore ? (anime.averageScore / 10).toFixed(1) : 'N/A';
-                const trailer = anime.trailer?.site === 'youtube' ? `https://www.youtube.com/embed/${anime.trailer.id}` : null;
-                const genres = anime.genres?.map(g => `<span class="px-2 py-1 bg-indigo-600/30 border border-indigo-500/50 rounded text-xs">${g}</span>`).join(' ') || 'N/A';
-                const studios = anime.studios?.nodes?.map(s => s.name).join(', ') || 'Unknown';
-                const season = anime.season && anime.seasonYear ? `${anime.season} ${anime.seasonYear}` : 'N/A';
-                
-                // Store character data for modal access
-                currentAnimeCharacters = anime.characters?.edges || [];
-                
-                const characters = anime.characters?.edges?.map((char, index) => `
-                    <div onclick="openCharacterModal(${anime.id}, ${index})" class="bg-gray-700/50 rounded-lg overflow-hidden border border-gray-600 hover:border-pink-500 transition-all group cursor-pointer">
-                        <div class="aspect-[3/4] overflow-hidden">
-                            <img src="${char.node.image.large}" alt="${char.node.name.full}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+            const data = await anilistQuery(query);
+            if (!data) {
+                content.innerHTML = '<div class="p-8 text-center text-red-400">Failed to load anime details.</div>';
+                return;
+            }
+            
+            const anime = data.Media;
+            currentAnimeCharacters = anime.characters?.edges || [];
+            
+            // Data processing
+            const title = anime.title.english || anime.title.romaji;
+            const banner = anime.bannerImage || anime.coverImage.extraLarge;
+            const desc = anime.description || 'No description available.';
+            const trailerUrl = (anime.trailer?.site === 'youtube' && anime.trailer?.id) ? `https://www.youtube.com/embed/${anime.trailer.id}` : null;
+            
+            const studios = anime.studios?.nodes?.map(s => s.name).join(', ') || 'Unknown';
+            const relatedContent = anime.relations?.edges?.filter(edge => ['PREQUEL', 'SEQUEL'].includes(edge.relationType)) || [];
+            
+            // Render content
+            content.innerHTML = `
+                <div class="relative">
+                    <!-- Close Button -->
+                    <button onclick="closeModal()" class="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-red-500 backdrop-blur-md text-white rounded-full transition-all">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                    
+                    <!-- Banner Header -->
+                    <div class="h-56 md:h-80 w-full relative">
+                        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${banner}');"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
+                        
+                        <div class="absolute bottom-0 left-0 w-full p-6 md:p-10 flex items-end gap-6">
+                            <!-- Poster (Desktop) -->
+                            <img src="${anime.coverImage.extraLarge}" class="hidden md:block w-48 rounded-xl shadow-2xl border-4 border-slate-800 -mb-16 z-20 bg-slate-800">
+                            
+                            <div class="flex-1 mb-2">
+                                <h2 class="text-3xl md:text-5xl font-bold text-white leading-tight text-shadow-lg">${title}</h2>
+                                <p class="text-slate-300 text-lg">${anime.title.native || ''}</p>
+                                <div class="flex flex-wrap gap-2 mt-3">
+                                    ${anime.genres.map(g => `<span class="px-3 py-1 bg-indigo-600/80 backdrop-blur-sm rounded-full text-xs font-bold text-white border border-indigo-500/30">${g}</span>`).join('')}
+                                </div>
+                            </div>
                         </div>
-                        <div class="p-2">
-                            <p class="text-xs font-medium truncate">${char.node.name.full}</p>
-                            <p class="text-xs text-gray-400">${char.role}</p>
-                            ${char.voiceActors && char.voiceActors.length > 0 ? `
-                                <div class="mt-2 pt-2 border-t border-gray-600">
-                                    <p class="text-[10px] text-gray-500 truncate">CV: ${char.voiceActors[0].name.full}</p>
+                    </div>
+                    
+                    <div class="p-6 md:p-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <!-- Left Column (Info) -->
+                        <div class="md:col-span-1 space-y-6">
+                            <!-- Mobile Poster -->
+                            <img src="${anime.coverImage.extraLarge}" class="md:hidden w-48 mx-auto rounded-xl shadow-2xl border-4 border-slate-800 mb-6">
+                            
+                            <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50 space-y-4">
+                                <div class="grid grid-cols-2 gap-4 text-center">
+                                    <div class="p-3 bg-slate-700/50 rounded-lg">
+                                        <div class="text-green-400 font-bold text-xl">${anime.averageScore || 'N/A'}%</div>
+                                        <div class="text-xs text-slate-400 uppercase">Score</div>
+                                    </div>
+                                    <div class="p-3 bg-slate-700/50 rounded-lg">
+                                        <div class="text-indigo-400 font-bold text-xl">#${anime.popularity?.toLocaleString() || '-'}</div>
+                                        <div class="text-xs text-slate-400 uppercase">Popularity</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex justify-between border-b border-slate-700 pb-2">
+                                        <span class="text-slate-400">Format</span>
+                                        <span class="font-medium">${anime.format}</span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-slate-700 pb-2">
+                                        <span class="text-slate-400">Episodes</span>
+                                        <span class="font-medium">${anime.episodes || '?'}</span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-slate-700 pb-2">
+                                        <span class="text-slate-400">Status</span>
+                                        <span class="font-medium">${anime.status}</span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-slate-700 pb-2">
+                                        <span class="text-slate-400">Season</span>
+                                        <span class="font-medium capitalize">${(anime.season || '').toLowerCase()} ${anime.seasonYear || ''}</span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-slate-700 pb-2">
+                                        <span class="text-slate-400">Studio</span>
+                                        <span class="font-medium text-right truncate w-32">${studios}</span>
+                                    </div>
+                                </div>
+                                
+                                <a href="${anime.siteUrl}" target="_blank" class="block w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-center rounded-lg font-bold text-white transition shadow-lg shadow-indigo-500/20">
+                                    View on AniList
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column (Content) -->
+                        <div class="md:col-span-2 space-y-8">
+                            <div class="prose prose-invert max-w-none">
+                                <h3 class="text-xl font-bold text-white mb-2">Synopsis</h3>
+                                <div class="text-slate-300 leading-relaxed bg-slate-800/30 p-4 rounded-xl border border-slate-700/50">
+                                    ${desc}
+                                </div>
+                            </div>
+                            
+                            ${trailerUrl ? `
+                                <div>
+                                    <h3 class="text-xl font-bold text-white mb-3">Trailer</h3>
+                                    <div class="aspect-video rounded-xl overflow-hidden shadow-lg">
+                                        <iframe src="${trailerUrl}" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <div>
+                                <h3 class="text-xl font-bold text-white mb-3">Main Characters</h3>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    ${currentAnimeCharacters.slice(0, 8).map((edge, idx) => `
+                                        <div onclick="openCharacterModal(${idx})" class="bg-slate-800 rounded-lg overflow-hidden hover:bg-slate-700 cursor-pointer transition group">
+                                            <div class="aspect-square overflow-hidden">
+                                                <img src="${edge.node.image.large}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                                            </div>
+                                            <div class="p-2">
+                                                <div class="font-bold text-sm truncate text-white">${edge.node.name.full}</div>
+                                                <div class="text-xs text-slate-400 truncate">${edge.role}</div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            
+                             ${relatedContent.length > 0 ? `
+                                <div>
+                                    <h3 class="text-xl font-bold text-white mb-3">Franchise</h3>
+                                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-8">
+                                        ${relatedContent.map(edge => `
+                                            <div onclick="openModal(${edge.node.id})" class="cursor-pointer group">
+                                                <div class="aspect-[2/3] rounded-lg overflow-hidden shadow-md relative">
+                                                    <img src="${edge.node.coverImage.medium}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
+                                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
+                                                    <div class="absolute top-0 left-0 bg-indigo-600/90 text-white text-[10px] font-bold px-2 py-1 rounded-br-lg">
+                                                        ${edge.relationType === 'PREQUEL' ? 'Prequel' : 'Sequel'}
+                                                    </div>
+                                                </div>
+                                                <div class="mt-1 text-xs font-medium text-slate-400 truncate group-hover:text-white transition-colors">${edge.node.title.english || edge.node.title.romaji}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                             ${anime.recommendations?.nodes?.length ? `
+                                <div>
+                                    <h3 class="text-xl font-bold text-white mb-3">You Might Also Like</h3>
+                                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                                        ${anime.recommendations.nodes.filter(r => r.mediaRecommendation).map(rec => `
+                                            <div onclick="openModal(${rec.mediaRecommendation.id})" class="cursor-pointer group">
+                                                <div class="aspect-[2/3] rounded-lg overflow-hidden shadow-md relative">
+                                                    <img src="${rec.mediaRecommendation.coverImage.large}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
+                                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
+                                                </div>
+                                                <div class="mt-1 text-xs font-medium text-slate-400 truncate group-hover:text-white transition-colors">${rec.mediaRecommendation.title.english || rec.mediaRecommendation.title.romaji}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
                                 </div>
                             ` : ''}
                         </div>
                     </div>
-                `).join('') || '';
-                
-                const recommendations = anime.recommendations?.nodes?.filter(r => r.mediaRecommendation).map(rec => `
-                    <div onclick="openModal(${rec.mediaRecommendation.id}); event.stopPropagation();" class="cursor-pointer group">
-                        <div class="aspect-[2/3] overflow-hidden rounded-lg border border-gray-600 hover:border-pink-500 transition-all">
-                            <img src="${rec.mediaRecommendation.coverImage.large}" alt="${rec.mediaRecommendation.title.english || rec.mediaRecommendation.title.romaji}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
-                        </div>
-                        <p class="text-xs mt-1 truncate text-gray-300">${rec.mediaRecommendation.title.english || rec.mediaRecommendation.title.romaji}</p>
-                    </div>
-                `).join('') || '';
-
-                const relations = anime.relations?.edges?.filter(r => ['SEQUEL', 'PREQUEL', 'SIDE_STORY', 'ALTERNATIVE'].includes(r.relationType)).map(rel => `
-                    <div onclick="openModal(${rel.node.id}); event.stopPropagation();" class="cursor-pointer group bg-gray-700/50 rounded-lg p-3 border border-gray-600 hover:border-pink-500 transition-all flex gap-3">
-                        <img src="${rel.node.coverImage.medium}" alt="${rel.node.title.romaji}" class="w-16 h-24 object-cover rounded flex-shrink-0">
-                        <div class="overflow-hidden">
-                            <p class="text-xs text-pink-400 font-bold mb-1">${rel.relationType.replace('_', ' ')}</p>
-                            <p class="text-sm font-medium truncate">${rel.node.title.english || rel.node.title.romaji}</p>
-                            <p class="text-xs text-gray-400 truncate">${rel.node.format} • ${rel.node.averageScore ? (rel.node.averageScore / 10).toFixed(1) : 'N/A'}</p>
-                        </div>
-                    </div>
-                `).join('') || '';
-                
-                content.innerHTML = `
-                    <div class="relative">
-                        <div class="absolute inset-0 rounded-xl overflow-hidden">
-                            <div class="absolute inset-0 bg-cover bg-center blur-2xl opacity-20" style="background-image: url('${bgImage}');"></div>
-                            <div class="absolute inset-0 bg-gradient-to-b from-gray-900/95 via-gray-900/98 to-gray-900"></div>
-                        </div>
-                        
-                        <button onclick="closeModal()" class="absolute top-4 right-4 bg-gray-700/90 backdrop-blur-sm hover:bg-red-600 text-white rounded-full p-2 z-50 transition-all hover:scale-110">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                        
-                        <div class="relative flex flex-col md:flex-row">
-                            <div class="md:w-1/3 p-6 md:p-8">
-                                <div class="sticky top-6">
-                                    <img src="${image}" alt="${title}" class="w-full rounded-xl shadow-2xl border-2 border-gray-700">
-                                    
-                                    <div class="mt-6 bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 border border-gray-700">
-                                        <div class="grid grid-cols-2 gap-4 text-sm">
-                                            <div class="text-center">
-                                                <div class="text-2xl font-bold text-yellow-400">${score}</div>
-                                                <div class="text-xs text-gray-400 mt-1">Score</div>
-                                            </div>
-                                            <div class="text-center">
-                                                <div class="text-2xl font-bold text-indigo-400">${anime.popularity?.toLocaleString() || 'N/A'}</div>
-                                                <div class="text-xs text-gray-400 mt-1">Popularity</div>
-                                            </div>
-                                            <div class="text-center col-span-2">
-                                                <div class="text-2xl font-bold text-pink-400">❤️ ${anime.favourites?.toLocaleString() || 'N/A'}</div>
-                                                <div class="text-xs text-gray-400 mt-1">Favorites</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mt-4 space-y-2">
-                                        <a href="${anime.siteUrl}" target="_blank" class="block bg-indigo-600 hover:bg-indigo-500 text-center py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-lg">AniList Page</a>
-                                        ${trailer ? '<button onclick="document.getElementById(\'trailer-section\').scrollIntoView({behavior: \'smooth\'})" class="w-full bg-pink-600 hover:bg-pink-500 text-center py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-lg">Watch Trailer</button>' : ''}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="md:w-2/3 p-6 md:p-8 overflow-y-auto max-h-[85vh] scrollbar-thin">
-                                <h2 class="text-3xl md:text-4xl font-bold mb-2 text-white leading-tight break-words">${title}</h2>
-                                <p class="text-gray-400 text-sm mb-4 break-words">${anime.title.native || ''}</p>
-                                
-                                <div class="flex flex-wrap gap-2 mb-6">
-                                    <span class="px-3 py-1.5 bg-indigo-600 rounded-full text-xs font-bold">${anime.status}</span>
-                                    <span class="px-3 py-1.5 bg-gray-700 rounded-full text-xs font-bold">${anime.format}</span>
-                                    <span class="px-3 py-1.5 bg-gray-700 rounded-full text-xs">${anime.episodes || '?'} Episodes</span>
-                                    <span class="px-3 py-1.5 bg-gray-700 rounded-full text-xs">${anime.duration || '?'} min</span>
-                                </div>
-                                
-                                <div class="mb-8">
-                                    <h3 class="text-xl font-bold text-indigo-400 mb-3">Synopsis</h3>
-                                    <p class="text-gray-300 leading-relaxed text-sm break-words">${description}</p>
-                                </div>
-                                
-                                <div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-800/50 rounded-xl p-5 border border-gray-700">
-                                    <div>
-                                        <span class="block text-gray-500 text-xs uppercase font-semibold mb-1">Season</span>
-                                        <span class="font-medium text-sm">${season}</span>
-                                    </div>
-                                    <div>
-                                        <span class="block text-gray-500 text-xs uppercase font-semibold mb-1">Studios</span>
-                                        <span class="font-medium text-sm">${studios}</span>
-                                    </div>
-                                    <div>
-                                        <span class="block text-gray-500 text-xs uppercase font-semibold mb-1">Source</span>
-                                        <span class="font-medium text-sm">${anime.source || 'N/A'}</span>
-                                    </div>
-                                    <div>
-                                        <span class="block text-gray-500 text-xs uppercase font-semibold mb-1">Format</span>
-                                        <span class="font-medium text-sm">${anime.format}</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-8">
-                                    <h3 class="text-lg font-bold text-indigo-400 mb-3">Genres</h3>
-                                    <div class="flex flex-wrap gap-2">${genres}</div>
-                                </div>
-                                
-                                ${relations ? `<div class="mb-8"><h3 class="text-xl font-bold text-indigo-400 mb-4">Related Anime</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3">${relations}</div></div>` : ''}
-                                
-                                ${trailer ? `<div id="trailer-section" class="mb-8"><h3 class="text-xl font-bold text-indigo-400 mb-4">Trailer</h3><div class="aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border-2 border-gray-700"><iframe src="${trailer}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen class="w-full h-full"></iframe></div></div>` : ''}
-                                
-                                ${characters ? `<div class="mb-8"><h3 class="text-xl font-bold text-indigo-400 mb-4">Main Characters</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-3">${characters}</div></div>` : ''}
-                                
-                                ${recommendations ? `<div class="mb-6"><h3 class="text-xl font-bold text-indigo-400 mb-4">You Might Also Like</h3><div class="grid grid-cols-3 md:grid-cols-6 gap-3">${recommendations}</div></div>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } catch (error) {
-                content.innerHTML = '<div class="p-10 text-center text-red-400">Failed to load details.</div>';
-            }
+                </div>
+            `;
         }
 
         function closeModal() {
@@ -960,160 +1459,104 @@
                 content.innerHTML = '';
             }, 300);
         }
-
+        
         document.getElementById('modal-overlay').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('modal-overlay')) closeModal();
+            if (e.target.id === 'modal-overlay') closeModal();
         });
 
-        // Store character data globally for character modal
-        let currentAnimeCharacters = [];
-
-        async function openCharacterModal(animeId, charIndex) {
-            // Fetch full character details
-            const char = currentAnimeCharacters[charIndex];
-            if (!char) return;
-
-            const charQuery = `
+        async function openCharacterModal(index) {
+            const charEdge = currentAnimeCharacters[index];
+            if (!charEdge) return;
+            
+            // Fetch more details
+            const query = `
                 query {
-                    Character(id: ${char.node.id}) {
+                    Character(id: ${charEdge.node.id}) {
                         id
                         name { full native }
                         image { large }
                         description
                         age
                         gender
-                        dateOfBirth { year month day }
                         bloodType
+                        dateOfBirth { year month day }
+                        siteUrl
                     }
                 }
             `;
-
-            try {
-                const data = await anilistQuery(charQuery);
-                const character = data.Character;
-                
-                const charOverlay = document.createElement('div');
-                charOverlay.id = 'character-modal-overlay';
-                charOverlay.className = 'fixed inset-0 bg-black/90 backdrop-blur-sm z-[60] flex items-center justify-center p-4';
-                
-                const description = character.description?.replace(/<[^>]*>/g, '') || 'No description available.';
-                const birthDate = character.dateOfBirth?.year ? `${character.dateOfBirth.month}/${character.dateOfBirth.day}/${character.dateOfBirth.year}` : 'Unknown';
-                
-                charOverlay.innerHTML = `
-                    <div class="bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700 scrollbar-thin transform scale-95 animate-scale-in">
-                        <div class="relative">
-                            <button onclick="closeCharacterModal()" class="absolute top-4 right-4 bg-gray-700/90 backdrop-blur-sm hover:bg-red-600 text-white rounded-full p-2 z-10 transition-all hover:scale-110">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+            
+            const data = await anilistQuery(query);
+            if (!data) return;
+            
+            const char = data.Character;
+            const overlay = document.getElementById('character-modal-overlay');
+            
+            overlay.innerHTML = `
+                <div class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fadeIn">
+                    <div class="bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto border border-slate-600 shadow-2xl flex flex-col md:flex-row overflow-hidden">
+                        <div class="w-full md:w-1/3 bg-slate-700/30 relative">
+                            <img src="${char.image.large}" class="w-full h-64 md:h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 md:bg-gradient-to-r md:from-transparent md:to-slate-800/80"></div>
+                        </div>
+                        <div class="w-full md:w-2/3 p-6 relative">
+                            <button onclick="document.getElementById('character-modal-overlay').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-700/50 rounded-full p-1">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                             
-                            <div class="flex flex-col md:flex-row">
-                                <div class="md:w-2/5 p-6">
-                                    <img src="${character.image.large}" alt="${character.name.full}" class="w-full rounded-xl shadow-2xl border-2 border-gray-700">
-                                    
-                                    <div class="mt-6 bg-gray-700/50 rounded-xl p-4 border border-gray-600">
-                                        <h4 class="text-sm font-bold text-gray-400 mb-3 uppercase">Character Info</h4>
-                                        <div class="space-y-2 text-sm">
-                                            ${character.age ? `<div><span class="text-gray-500">Age:</span> <span class="text-white font-medium">${character.age}</span></div>` : ''}
-                                            ${character.gender ? `<div><span class="text-gray-500">Gender:</span> <span class="text-white font-medium">${character.gender}</span></div>` : ''}
-                                            ${character.dateOfBirth?.year ? `<div><span class="text-gray-500">Birthday:</span> <span class="text-white font-medium">${birthDate}</span></div>` : ''}
-                                            ${character.bloodType ? `<div><span class="text-gray-500">Blood Type:</span> <span class="text-white font-medium">${character.bloodType}</span></div>` : ''}
-                                            <div><span class="text-gray-500">Role:</span> <span class="text-pink-400 font-bold">${char.role}</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="md:w-3/5 p-6">
-                                    <h2 class="text-3xl font-bold mb-2 text-white break-words">${character.name.full}</h2>
-                                    ${character.name.native ? `<p class="text-gray-400 text-sm mb-6 break-words">${character.name.native}</p>` : ''}
-                                    
-                                    <div>
-                                        <h3 class="text-lg font-bold text-indigo-400 mb-3">About</h3>
-                                        <p class="text-gray-300 leading-relaxed text-sm break-words">${description}</p>
-                                    </div>
-                                </div>
+                            <h2 class="text-3xl font-bold text-white mb-1">${char.name.full}</h2>
+                            <p class="text-slate-400 text-sm mb-4">${char.name.native || ''}</p>
+                            
+                            <div class="flex flex-wrap gap-3 mb-6 text-xs">
+                                ${char.age ? `<span class="px-2 py-1 bg-slate-700 rounded text-slate-200">Age: ${char.age}</span>` : ''}
+                                ${char.gender ? `<span class="px-2 py-1 bg-slate-700 rounded text-slate-200">Gender: ${char.gender}</span>` : ''}
+                                ${char.bloodType ? `<span class="px-2 py-1 bg-slate-700 rounded text-slate-200">Blood: ${char.bloodType}</span>` : ''}
+                            </div>
+                            
+                            <div class="prose prose-invert prose-sm max-h-60 overflow-y-auto pr-2 scrollbar-thin">
+                                ${char.description || 'No description.'}
                             </div>
                         </div>
                     </div>
-                `;
-                
-                document.body.appendChild(charOverlay);
-                setTimeout(() => charOverlay.querySelector('div').classList.remove('scale-95'), 10);
-                
-                charOverlay.addEventListener('click', (e) => {
-                    if (e.target === charOverlay) closeCharacterModal();
-                });
-            } catch (error) {
-                console.error('Failed to load character details:', error);
-            }
+                </div>
+            `;
+            overlay.classList.remove('hidden');
         }
 
-        function closeCharacterModal() {
-            const charOverlay = document.getElementById('character-modal-overlay');
-            if (charOverlay) {
-                charOverlay.querySelector('div').classList.add('scale-95');
-                setTimeout(() => charOverlay.remove(), 300);
-            }
-        }
-
+        // -- Surprise Me Logic --
+        
         function openSurpriseSettings() {
             const overlay = document.getElementById('surprise-settings-overlay');
             const content = document.getElementById('surprise-settings-content');
             
-            const genreOptions = state.genres.map(g => `<option value="${g}" ${state.surprise.genre === g ? 'selected' : ''}>${g}</option>`).join('');
-            
             content.innerHTML = `
-                <div class="p-6">
+                <div class="p-6 bg-slate-900">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-pink-400">🎲 Surprise Me Settings</h2>
-                        <button onclick="closeSurpriseSettings()" class="text-gray-400 hover:text-white transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+                        <h2 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-400">Randomizer Settings</h2>
+                        <button onclick="closeSurpriseSettings()" class="text-slate-400 hover:text-white"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                     </div>
-                    
-                    <p class="text-gray-400 mb-6 text-sm">Customize the filters for your random anime selection</p>
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Preferred Genre</label>
-                            <select id="surprise-genre" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
+                            <label class="block text-xs font-medium text-slate-400 mb-2 uppercase">Genre</label>
+                            <select id="surprise-genre" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm focus:ring-indigo-500 focus:border-indigo-500 text-white">
                                 <option value="">Any Genre</option>
-                                ${genreOptions}
+                                ${state.genres.map(g => `<option value="${g}" ${state.surprise.genre === g ? 'selected' : ''}>${g}</option>`).join('')}
                             </select>
                         </div>
-                        
                         <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Format</label>
-                            <select id="surprise-format" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
-                                <option value="">Any Format</option>
-                                <option value="TV" ${state.surprise.format === 'TV' ? 'selected' : ''}>TV Series</option>
-                                <option value="MOVIE" ${state.surprise.format === 'MOVIE' ? 'selected' : ''}>Movie</option>
-                                <option value="OVA" ${state.surprise.format === 'OVA' ? 'selected' : ''}>OVA</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Minimum Score</label>
-                            <select id="surprise-score" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
-                                <option value="" ${!state.surprise.minScore ? 'selected' : ''}>Any Score</option>
-                                <option value="80" ${state.surprise.minScore === '80' ? 'selected' : ''}>80+ (Excellent)</option>
-                                <option value="70" ${state.surprise.minScore === '70' ? 'selected' : ''}>70+ (Good)</option>
-                                <option value="60" ${state.surprise.minScore === '60' ? 'selected' : ''}>60+ (Fine)</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2">From Year (optional)</label>
-                            <input type="number" id="surprise-year" value="${state.surprise.year}" placeholder="e.g., 2020" min="1960" max="2025" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3">
+                            <label class="block text-xs font-medium text-slate-400 mb-2 uppercase">Minimum Score</label>
+                            <div class="flex gap-2">
+                                ${['', '60', '70', '80'].map(s => `
+                                    <button onclick="updateSurpriseScore('${s}')" class="flex-1 py-2 rounded-lg text-sm border ${state.surprise.minScore === s ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500'} transition">${s ? s + '+' : 'Any'}</button>
+                                `).join('')}
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="mt-8 flex gap-3">
-                        <button onclick="clearSurpriseSettings()" class="flex-1 px-6 py-3 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-lg transition-all font-medium">Reset Filters</button>
-                        <button onclick="saveSurpriseSettings()" class="flex-1 px-6 py-3 bg-pink-600 hover:bg-pink-500 rounded-lg transition-all font-medium">Save Filters ✓</button>
+                    <div class="mt-8">
+                        <button onclick="saveSurpriseSettings()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 transition-all transform active:scale-95">
+                            Save & Close
+                        </button>
                     </div>
                 </div>
             `;
@@ -1123,34 +1566,82 @@
             content.classList.add('scale-100');
         }
 
-        function closeSurpriseSettings() {
-            const overlay = document.getElementById('surprise-settings-overlay');
-            const content = document.getElementById('surprise-settings-content');
-            
-            overlay.classList.add('opacity-0');
-            content.classList.add('scale-95');
-            
-            setTimeout(() => overlay.classList.add('hidden'), 300);
+        function updateSurpriseScore(val) {
+            state.surprise.minScore = val;
+            openSurpriseSettings(); // Re-render to update UI state
         }
 
-        function clearSurpriseSettings() {
-            state.surprise = { genre: '', format: '', minScore: '70', year: '' };
-            openSurpriseSettings();
+        function closeSurpriseSettings() {
+             const overlay = document.getElementById('surprise-settings-overlay');
+             const content = document.getElementById('surprise-settings-content');
+             overlay.classList.add('opacity-0');
+             content.classList.add('scale-95');
+             setTimeout(() => overlay.classList.add('hidden'), 300);
         }
 
         function saveSurpriseSettings() {
-            state.surprise.genre = document.getElementById('surprise-genre')?.value || '';
-            state.surprise.format = document.getElementById('surprise-format')?.value || '';
-            state.surprise.minScore = document.getElementById('surprise-score')?.value || '';
-            state.surprise.year = document.getElementById('surprise-year')?.value || '';
+            const genreEl = document.getElementById('surprise-genre');
+            if (genreEl) state.surprise.genre = genreEl.value;
             closeSurpriseSettings();
         }
 
+        async function surpriseMe() {
+            const btn = document.querySelector('button[onclick="surpriseMe()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loader w-4 h-4 border-2"></span> Rolling...';
+            
+            try {
+                let filters = [];
+                if (state.surprise.genre) filters.push(`genre_in: ["${state.surprise.genre}"]`);
+                if (state.surprise.minScore) filters.push(`averageScore_greater: ${state.surprise.minScore}`);
+                
+                // Random page to ensure variety
+                const randomPage = Math.floor(Math.random() * 10) + 1;
+                
+                const query = `
+                    query {
+                        Page(page: ${randomPage}, perPage: 50) {
+                            media(type: ANIME, sort: POPULARITY_DESC ${filters.length ? ', ' + filters.join(', ') : ''}) {
+                                id
+                            }
+                        }
+                    }
+                `;
+                
+                const data = await anilistQuery(query);
+                if (data && data.Page.media.length > 0) {
+                    const randomAnime = data.Page.media[Math.floor(Math.random() * data.Page.media.length)];
+                    openModal(randomAnime.id);
+                } else {
+                    alert('No anime found with current settings!');
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                btn.innerHTML = originalText;
+            }
+        }
+
         document.getElementById('surprise-settings-overlay').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('surprise-settings-overlay')) closeSurpriseSettings();
+            if (e.target.id === 'surprise-settings-overlay') closeSurpriseSettings();
         });
 
-        init();
+        // Init
+        window.addEventListener('DOMContentLoaded', () => {
+            init();
+        });
+
+        function init() {
+            navigate('home');
+            
+            // Add simple intro animation style
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+                .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
+            `;
+            document.head.appendChild(style);
+        }
     </script>
 </body>
 </html>

@@ -1,0 +1,6 @@
+{
+  "name": "AnimeFinder - Discover & Track Anime",
+  "description": "A high-performance modern anime discovery platform featuring smart recommendation quiz, live airing schedules, AniList integration, rich character bios, watchlist tracking, and randomizer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

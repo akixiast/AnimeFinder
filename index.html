@@ -17,6 +17,10 @@
             --font-sans: 'Outfit', sans-serif;
         }
         
+        :root {
+            color-scheme: dark;
+        }
+
         body {
             font-family: 'Outfit', sans-serif;
             background-color: #0f172a;
@@ -163,6 +167,43 @@
             appearance: none;
             -webkit-appearance: none;
         }
+
+        /* Custom select chevron — appearance:none strips the native arrow */
+        select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 7.5l5 5 5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.65rem center;
+            background-size: 1.1rem 1.1rem;
+            padding-right: 2.25rem;
+        }
+        select:hover { border-color: rgba(99, 102, 241, 0.8); }
+        select option { background-color: #1e293b; color: #e2e8f0; }
+
+        /* Rich text — AniList descriptions arrive as raw HTML.
+           Tailwind's `prose` utilities need the typography plugin, which is
+           not loaded here, so they render as unstyled text. */
+        .rich-text {
+            font-size: 0.95rem;
+            line-height: 1.75;
+            color: #cbd5e1;
+        }
+        .rich-text p { margin: 0 0 0.75rem; }
+        .rich-text p:last-child { margin-bottom: 0; }
+        .rich-text a { color: #818cf8; text-decoration: underline; }
+        .rich-text b, .rich-text strong { color: #f1f5f9; font-weight: 700; }
+        .rich-text i, .rich-text em { font-style: italic; }
+        .rich-text ul, .rich-text ol { margin: 0 0 0.75rem 1.25rem; }
+        .rich-text ul { list-style: disc; }
+        .rich-text ol { list-style: decimal; }
+        .rich-text-sm { font-size: 0.85rem; line-height: 1.65; }
+
+        /* Utilities the templates use that Tailwind does not ship */
+        .text-shadow-lg { text-shadow: 0 10px 24px rgba(0, 0, 0, 0.55); }
+        .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #475569; }
         
         /* Selection */
         ::selection {
@@ -580,7 +621,7 @@
                             </div>
                         </div>
                         
-                        <div class="glass-card p-8 md:p-10 rounded-3xl border border-slate-700/50 relative overflow-hidden">
+                        <div class="glass-card p-8 md:p-10 rounded-3xl border border-slate-700/50 relative overflow-hidden transition-all duration-300">
                             <!-- Background blob -->
                             <div class="absolute -top-20 -right-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
                             
@@ -661,9 +702,9 @@
                             <div class="col-span-full pt-2 border-t border-slate-700/50 flex flex-col md:flex-row justify-between items-center gap-4">
                                 <div class="flex flex-wrap gap-2">
                                     <span class="text-xs text-slate-500 uppercase font-bold py-2">Sort By:</span>
-                                    <button onclick="setSortOption('POPULARITY_DESC')" class="sort-btn px-3 py-1 rounded-full text-xs font-medium border border-slate-600 ${state.browse.sort === 'POPULARITY_DESC' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">Popular</button>
-                                    <button onclick="setSortOption('SCORE_DESC')" class="sort-btn px-3 py-1 rounded-full text-xs font-medium border border-slate-600 ${state.browse.sort === 'SCORE_DESC' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">Top Rated</button>
-                                    <button onclick="setSortOption('START_DATE_DESC')" class="sort-btn px-3 py-1 rounded-full text-xs font-medium border border-slate-600 ${state.browse.sort === 'START_DATE_DESC' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">Newest</button>
+                                    <button onclick="setSortOption('POPULARITY_DESC')" data-sort="POPULARITY_DESC" aria-pressed="false" class="sort-btn px-3 py-1 rounded-full text-xs font-medium border bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700">Popular</button>
+                                    <button onclick="setSortOption('SCORE_DESC')" data-sort="SCORE_DESC" aria-pressed="false" class="sort-btn px-3 py-1 rounded-full text-xs font-medium border bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700">Top Rated</button>
+                                    <button onclick="setSortOption('START_DATE_DESC')" data-sort="START_DATE_DESC" aria-pressed="false" class="sort-btn px-3 py-1 rounded-full text-xs font-medium border bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700">Newest</button>
                                 </div>
                                 <button onclick="clearAllFilters()" class="text-xs text-red-400 hover:text-red-300 font-medium">Clear All Filters</button>
                             </div>
@@ -935,6 +976,7 @@
                 activeFiltersCount.textContent = count;
                 activeFiltersCount.classList.toggle('hidden', count === 0);
             }
+            syncSortButtons();
 
             let filters = [];
             if (state.browse.search) filters.push(`search: "${state.browse.search}"`);
@@ -1127,6 +1169,26 @@
             });
             
             loadBrowseData();
+        }
+
+        const SORT_OPTIONS = ['POPULARITY_DESC', 'SCORE_DESC', 'START_DATE_DESC'];
+
+        // The sort pills live in the static template, so their active state has to be
+        // synced from state on every load — setSortOption/clearAllFilters only redraw
+        // the results grid and would otherwise leave the pills stale.
+        function syncSortButtons() {
+            SORT_OPTIONS.forEach(sort => {
+                const btn = document.querySelector(`.sort-btn[data-sort="${sort}"]`);
+                if (!btn) return;
+                const active = state.browse.sort === sort;
+                btn.classList.toggle('bg-indigo-600', active);
+                btn.classList.toggle('text-white', active);
+                btn.classList.toggle('border-indigo-500', active);
+                btn.classList.toggle('bg-slate-800', !active);
+                btn.classList.toggle('text-slate-400', !active);
+                btn.classList.toggle('border-slate-600', !active);
+                btn.setAttribute('aria-pressed', String(active));
+            });
         }
 
         function setSortOption(sort) {
@@ -1372,7 +1434,7 @@
                         
                         <!-- Right Column (Content) -->
                         <div class="md:col-span-2 space-y-8">
-                            <div class="prose prose-invert max-w-none">
+                            <div class="rich-text max-w-none">
                                 <h3 class="text-xl font-bold text-white mb-2">Synopsis</h3>
                                 <div class="text-slate-300 leading-relaxed bg-slate-800/30 p-4 rounded-xl border border-slate-700/50">
                                     ${desc}
@@ -1512,7 +1574,7 @@
                                 ${char.bloodType ? `<span class="px-2 py-1 bg-slate-700 rounded text-slate-200">Blood: ${char.bloodType}</span>` : ''}
                             </div>
                             
-                            <div class="prose prose-invert prose-sm max-h-60 overflow-y-auto pr-2 scrollbar-thin">
+                            <div class="rich-text rich-text-sm max-h-60 overflow-y-auto pr-2 scrollbar-thin">
                                 ${char.description || 'No description.'}
                             </div>
                         </div>

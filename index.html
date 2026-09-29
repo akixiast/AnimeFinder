@@ -6,7 +6,7 @@
 <title>AnimeFinder — Discover Your Next Favorite Anime</title>
 <meta name="description" content="A considered catalogue of anime. Ranked, scored, and quiet enough to browse.">
 <meta name="theme-color" content="#0a0a10">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236f6af5'/%3E%3Ctext x='16' y='22' font-family='sans-serif' font-size='14' font-weight='bold' fill='white' text-anchor='middle'%3EAF%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23e8304f'%3E%3Cpath fill-rule='evenodd' d='M34.5 27.7 L30.6 35.2 C30.2 36.4 31.4 36.8 32.4 37.4 C30.4 38 30 39 30.4 40 L28.6 48 C26.8 60 30.5 69.8 45 69.8 L58 69.8 C72.5 69.8 74 60 71.8 48 L68.9 34.5 L50 42 Z M31.7 57.4 a6.5 7.4 0 1 0 13 0 a6.5 7.4 0 1 0 -13 0 Z M51.6 57.4 a6.5 7.4 0 1 0 13 0 a6.5 7.4 0 1 0 -13 0 Z'/%3E%3Cellipse cx='41.2' cy='58.4' rx='2.4' ry='3.4'/%3E%3Cellipse cx='55.7' cy='58.4' rx='2.4' ry='3.4'/%3E%3C/g%3E%3Cg stroke='%23e8304f' stroke-width='2.4' stroke-linecap='round' fill='none'%3E%3Cpath d='M23.6 61.6 L27.8 63.4'/%3E%3Cpath d='M23.2 66.9 L27.4 65.2'/%3E%3Cpath d='M76.4 61.6 L72.2 63.4'/%3E%3Cpath d='M76.8 66.9 L72.6 65.2'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://s4.anilist.co">
@@ -70,6 +70,20 @@
 [data-mode="light"][data-theme="mint"]  {--ac1:#0f766e;--ac2:#4d7c0f;--acsoft:rgba(15,118,110,.12)}
 [data-mode="light"][data-theme="violet"]{--ac1:#6d28d9;--ac2:#a21caf;--acsoft:rgba(109,40,217,.12)}
 [data-mode="light"][data-theme="rose"]  {--ac1:#be123c;--ac2:#a16207;--acsoft:rgba(190,18,60,.12)}
+
+/* ---------- pastel themes ----------
+   Pastels are light by nature, so dark mode uses the soft tints directly
+   while light mode steps them down to a readable mid-tone and washes the
+   surfaces with the same hue. */
+[data-mode="dark"][data-theme="sorbet"]{--ac1:#f9a8d4;--ac2:#fdba74;--acsoft:rgba(249,168,212,.16);--bg:#0e0a10;--bg2:#141017}
+[data-mode="dark"][data-theme="cloud"] {--ac1:#a5b4fc;--ac2:#7dd3fc;--acsoft:rgba(165,180,252,.16);--bg:#0a0a11;--bg2:#10101a}
+[data-mode="dark"][data-theme="matcha"]{--ac1:#86efac;--ac2:#bef264;--acsoft:rgba(134,239,172,.15);--bg:#0a0f0d;--bg2:#0f1512}
+[data-mode="dark"][data-theme="blush"] {--ac1:#fda4af;--ac2:#d8b4fe;--acsoft:rgba(253,164,175,.16);--bg:#100a11;--bg2:#171018}
+
+[data-mode="light"][data-theme="sorbet"]{--ac1:#e0447c;--ac2:#ea7317;--acsoft:rgba(224,68,124,.11);--bg:#fff7f9;--bg2:#fdeef2}
+[data-mode="light"][data-theme="cloud"] {--ac1:#5561e6;--ac2:#0b93d9;--acsoft:rgba(85,97,230,.11);--bg:#f5f7ff;--bg2:#eaeffc}
+[data-mode="light"][data-theme="matcha"]{--ac1:#10a37a;--ac2:#6f9e14;--acsoft:rgba(16,163,122,.11);--bg:#f4fbf7;--bg2:#e7f5ec}
+[data-mode="light"][data-theme="blush"] {--ac1:#e8446b;--ac2:#8b5cf6;--acsoft:rgba(232,68,107,.11);--bg:#fff6f8;--bg2:#fceef3}
 
 /* ============================================================
    2. BASE
@@ -143,9 +157,10 @@ img{display:block; max-width:100%}
 }
 .rail .mk{
   width:30px;height:30px;border-radius:9px;margin-bottom:14px;
-  background:linear-gradient(135deg,var(--ac1),var(--ac2)); color:#fff;
-  display:grid;place-items:center;font-size:11px;font-weight:800;letter-spacing:-.03em;
+  color:var(--ac1);display:grid;place-items:center;transition:.22s;flex-shrink:0;
 }
+.rail .mk svg{width:23px;height:23px;display:block}
+.rail .mk:hover{color:var(--ac2);transform:scale(1.1) rotate(-4deg)}
 .rbtn{
   position:relative;width:36px;height:34px;border:0;border-radius:9px;background:transparent;
   color:var(--mu);font-size:15px;cursor:pointer;display:grid;place-items:center;transition:.18s;
@@ -589,7 +604,29 @@ input.num:focus{outline:0;border-color:var(--ac1);background:var(--glass2)}
 <div class="shell">
   <!-- ============ RAIL ============ -->
   <nav class="rail" aria-label="Primary">
-    <a class="mk" href="#" onclick="navigate('home');return false" title="AnimeFinder home" aria-label="Home">AF</a>
+    <a class="mk" href="#" onclick="navigate('home');return false" title="AnimeFinder home" aria-label="Home">
+      <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+        <g fill="currentColor">
+          <path fill-rule="evenodd" d="
+            M34.5 27.7 L30.6 35.2
+            C30.2 36.4 31.4 36.8 32.4 37.4
+            C30.4 38 30 39 30.4 40
+            L28.6 48
+            C26.8 60 30.5 69.8 45 69.8
+            L58 69.8
+            C72.5 69.8 74 60 71.8 48
+            L68.9 34.5 L50 42 Z
+            M31.7 57.4 a6.5 7.4 0 1 0 13 0 a6.5 7.4 0 1 0 -13 0 Z
+            M51.6 57.4 a6.5 7.4 0 1 0 13 0 a6.5 7.4 0 1 0 -13 0 Z"/>
+          <ellipse cx="41.2" cy="58.4" rx="2.4" ry="3.4"/>
+          <ellipse cx="55.7" cy="58.4" rx="2.4" ry="3.4"/>
+        </g>
+        <g stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none">
+          <path d="M23.6 61.6 L27.8 63.4"/><path d="M23.2 66.9 L27.4 65.2"/>
+          <path d="M76.4 61.6 L72.2 63.4"/><path d="M76.8 66.9 L72.6 65.2"/>
+        </g>
+      </svg>
+    </a>
     <button class="rbtn" id="r-home"    onclick="navigate('home')"    title="Home"     aria-label="Home">◈</button>
     <button class="rbtn" id="r-browse"  onclick="navigate('browse')"  title="Browse"   aria-label="Browse">▤</button>
     <button class="rbtn" id="r-schedule"onclick="navigate('schedule')"title="Schedule" aria-label="Schedule">◷</button>
@@ -675,34 +712,36 @@ const state = {
    THEME
    ============================================================ */
 const THEMES = [
-  { id:'indigo', label:'Indigo' },
-  { id:'ember',  label:'Ember'  },
-  { id:'mint',   label:'Mint'   },
-  { id:'violet', label:'Violet' },
-  { id:'rose',   label:'Rose'   },
+  { group:'Classic' },
+  { id:'indigo', label:'Indigo', sw:'linear-gradient(135deg,#818cf8,#f472b6)' },
+  { id:'ember',  label:'Ember',  sw:'linear-gradient(135deg,#fb923c,#f43f5e)' },
+  { id:'mint',   label:'Mint',   sw:'linear-gradient(135deg,#2dd4bf,#a3e635)' },
+  { id:'violet', label:'Violet', sw:'linear-gradient(135deg,#a78bfa,#e879f9)' },
+  { id:'rose',   label:'Rose',   sw:'linear-gradient(135deg,#fb7185,#fcd34d)' },
+  { group:'Pastel' },
+  { id:'sorbet', label:'Sorbet', sw:'linear-gradient(135deg,#f9a8d4,#fdba74)' },
+  { id:'cloud',  label:'Cloud',  sw:'linear-gradient(135deg,#a5b4fc,#7dd3fc)' },
+  { id:'matcha', label:'Matcha', sw:'linear-gradient(135deg,#86efac,#bef264)' },
+  { id:'blush',  label:'Blush',  sw:'linear-gradient(135deg,#fda4af,#d8b4fe)' },
 ];
-const SWATCH = {
-  indigo:'linear-gradient(135deg,#818cf8,#f472b6)',
-  ember: 'linear-gradient(135deg,#fb923c,#f43f5e)',
-  mint:  'linear-gradient(135deg,#2dd4bf,#a3e635)',
-  violet:'linear-gradient(135deg,#a78bfa,#e879f9)',
-  rose:  'linear-gradient(135deg,#fb7185,#fcd34d)',
-};
 
 function setTheme(id){
-  state.theme = THEMES.some(t => t.id === id) ? id : 'indigo';
+  const ok = THEMES.some(t => t.id === id);
+  state.theme = ok ? id : 'indigo';
   document.documentElement.dataset.theme = state.theme;
   localStorage.setItem('af-theme', state.theme);
-  document.getElementById('theme-btn').style.color = 'var(--ac1)';
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.style.color = 'var(--ac1)';
   renderThemeMenu();
 }
 function renderThemeMenu(){
   const m = document.getElementById('thememenu');
   if (!m) return;
-  m.innerHTML = `<u>Theme</u>` + THEMES.map(t => `
-    <button role="menuitemradio" data-t="${t.id}" aria-checked="${state.theme === t.id}">
-      <i style="background:${SWATCH[t.id]}"></i>${t.label}
-    </button>`).join('');
+  m.innerHTML = THEMES.map(t => t.group
+    ? `<u>${t.group}</u>`
+    : `<button role="menuitemradio" data-t="${t.id}" aria-checked="${state.theme === t.id}">
+         <i style="background:${t.sw}"></i>${t.label}
+       </button>`).join('');
 }
 function toggleThemes(){
   const m = document.getElementById('thememenu');

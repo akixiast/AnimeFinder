@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnimeFinder — Design Lab</title>
+<style>
+/* ================= LAB CHROME (neutral, not part of any design) ================= */
+*{box-sizing:border-box}
+body{margin:0;background:#0a0a0d;color:#e9e9ec;font:400 15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.lab-bar{position:sticky;top:0;z-index:99;display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px 18px;background:rgba(10,10,13,.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.08)}
+.lab-bar h1{margin:0;font-size:13px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.lab-bar h1 span{color:#6a6a75;font-weight:500}
+.seg{display:flex;gap:4px;padding:4px;background:#16161c;border:1px solid rgba(255,255,255,.08);border-radius:10px}
+.seg button{border:0;cursor:pointer;padding:7px 13px;border-radius:7px;background:transparent;color:#9a9aa6;font:inherit;font-size:13px;font-weight:600;transition:.15s;white-space:nowrap}
+.seg button:hover{color:#fff;background:#1f1f28}
+.seg button[aria-pressed=true]{background:#fff;color:#0a0a0d}
+.bar-right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* single-focus stage: one design, shown as large as it deserves */
+#wrap{padding:20px;display:flex;justify-content:center;align-items:flex-start}
+.spec{width:100%;border-radius:16px;overflow:hidden;border:1px solid var(--bd);background:var(--bg);color:var(--tx);box-shadow:var(--sh)}
+.spec-hd{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--bd);background:var(--bg2);font:600 10px/1 var(--sf,inherit);letter-spacing:.1em;text-transform:uppercase;color:var(--tx)}
+.spec-hd b{color:var(--tx);font-weight:700}
+.spec-hd .tag{padding:2px 7px;border:1px solid var(--bd);border-radius:99px;color:var(--mu)}
+.blurb{padding:11px 14px 14px;border-top:1px solid var(--bd);background:var(--bg2);font-size:11.5px;line-height:1.6;color:var(--mu)}
+.stage{height:calc(100vh - 210px);min-height:420px;overflow-y:auto;overflow-x:hidden;background:var(--bg)}
+.stage::-webkit-scrollbar{width:8px}
+.stage::-webkit-scrollbar-thumb{background:var(--bd);border-radius:4px}
+.canvas{background:var(--bg);color:var(--tx);min-height:100%}
+.poster{width:100%;height:100%;object-fit:cover;display:block}
+
+/* compare mode */
+.lab-grid{display:grid;grid-template-columns:1fr;gap:20px;padding:20px;max-width:1360px;margin:0 auto;align-items:start}
+@media(min-width:1100px){.lab-grid{grid-template-columns:1fr 1fr}}
+.lab-grid .spec{width:auto}
+.lab-grid .stage{height:660px}
+
+/* ================================================================
+   DESIGN 1 — CINEMA : poster-first editorial, rail-based, serif display
+   ================================================================ */
+[data-design="cinema"]{
+  --bg:#0b0b0d;--bg2:#111113;--sf:#141416;--bd:rgba(255,255,255,.1);--bd2:rgba(255,255,255,.22);
+  --tx:#f2f0ec;--mu:#8e8b85;--ac:#c9a961;--aci:#1a1408;--ac-soft:rgba(201,169,97,.14);
+  --r:2px;--sh:none;--serif:Georgia,"Times New Roman",serif;--sf:inherit;
+}
+[data-design="cinema"][data-mode="light"]{
+  --bg:#fbfaf8;--bg2:#f3f1ec;--sf:#fff;--bd:rgba(20,18,14,.14);--bd2:rgba(20,18,14,.3);
+  --tx:#16140f;--mu:#6d6960;--ac:#8a6d20;--aci:#fffdf7;--ac-soft:rgba(138,109,32,.12);
+}
+.ci-nav{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--bd);min-width:0;flex-wrap:wrap}
+.ci-nav .lg{font-family:var(--serif);font-size:17px;font-weight:700;letter-spacing:-.02em;flex-shrink:0}
+.ci-nav .lk{font-size:9.5px;color:var(--mu);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.ci-nav .lk.on{color:var(--tx);box-shadow:inset 0 -1px 0 var(--ac)}
+.ci-nav .sp{margin-left:auto;display:flex;gap:10px;align-items:center}
+.ci-hero{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;padding:26px 22px 30px;align-items:end}
+.ci-hero>div{min-width:0}
+.ci-hero h1{margin:0;font-family:var(--serif);font-size:30px;line-height:1.05;font-weight:400;letter-spacing:-.02em}
+.ci-hero h1 em{font-style:italic;color:var(--ac)}
+.ci-hero p{margin:12px 0 0;color:var(--mu);font-size:12px;line-height:1.65;max-width:32ch}
+.ci-hero .go{margin-top:16px;display:inline-block;padding:9px 20px;background:var(--ac);color:var(--aci);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.ci-feat{position:relative;aspect-ratio:3/4;border-radius:var(--r);overflow:hidden;background:var(--sf);min-width:0}
+.ci-feat .lb{position:absolute;inset:auto 0 0 0;padding:12px;background:linear-gradient(transparent,rgba(0,0,0,.9));color:#fff}
+.ci-feat .lb b{display:block;font-size:12.5px;font-weight:700}
+.ci-feat .lb i{font-style:normal;font-size:10px;opacity:.75}
+.ci-tabs{display:flex;gap:16px;padding:0 22px;border-bottom:1px solid var(--bd);overflow:hidden}
+.ci-tabs span{padding:11px 0;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mu);border-bottom:1px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.ci-tabs span.on{color:var(--tx);border-color:var(--ac)}
+.ci-rail{display:flex;gap:14px;padding:18px 22px;overflow:hidden}
+.ci-card{flex:0 0 118px}
+.ci-card .ph{aspect-ratio:2/3;background:var(--sf);overflow:hidden}
+.ci-card .ph img{transition:transform .5s}
+.ci-card:hover .ph img{transform:scale(1.06)}
+.ci-card b{display:block;margin-top:8px;font-size:11.5px;font-weight:600;line-height:1.3;letter-spacing:-.01em}
+.ci-card i{display:block;font-style:normal;font-size:10px;color:var(--mu);margin-top:2px}
+.ci-sec{padding:4px 22px 0;display:flex;justify-content:space-between;align-items:baseline}
+.ci-sec b{font-family:var(--serif);font-size:15px;font-weight:400}
+.ci-sec i{font-style:normal;font-size:10px;color:var(--mu);letter-spacing:.1em;text-transform:uppercase}
+
+/* ================================================================
+   DESIGN 2 — TACTICAL : left rail console, dense table, mono, zero radius
+   ================================================================ */
+[data-design="tactical"]{
+  --bg:#070707;--bg2:#0d0d0d;--sf:#121212;--bd:#262626;--bd2:#4d4d4d;
+  --tx:#ededed;--mu:#7f7f7f;--ac:#22e07a;--aci:#00210f;--ac-soft:rgba(34,224,122,.12);
+  --r:0px;--sh:none;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--sf:var(--mono);
+}
+[data-design="tactical"][data-mode="light"]{
+  --bg:#fff;--bg2:#f7f7f7;--sf:#fbfbfb;--bd:#dcdcdc;--bd2:#333;
+  --tx:#0a0a0a;--mu:#5e5e5e;--ac:#00713d;--aci:#fff;--ac-soft:rgba(0,113,61,.1);
+}
+.tc{display:grid;grid-template-columns:58px 1fr;min-height:100%}
+.tc-rail{border-right:1px solid var(--bd);background:var(--bg2);padding:12px 0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.tc-rail .mk{width:28px;height:28px;display:grid;place-items:center;background:var(--ac);color:var(--aci);font-size:11px;font-weight:800;margin-bottom:12px}
+.tc-rail button{width:38px;height:34px;display:grid;place-items:center;font-size:15px;color:var(--mu);border-left:2px solid transparent}
+.tc-rail button.on{color:var(--ac);border-color:var(--ac);background:var(--ac-soft)}
+.tc-rail .sp{margin-top:auto}
+.tc-main{min-width:0}
+.tc-top{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--bd)}
+.tc-top .t{font-size:12.5px;font-weight:700;letter-spacing:.04em}
+.tc-top .w{margin-left:auto;display:flex;gap:6px;align-items:center;background:var(--sf);border:1px solid var(--bd);padding:5px 9px;font-size:10.5px;color:var(--mu);min-width:120px}
+.tc-stats{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--bd)}
+.tc-stat{padding:11px 14px;border-right:1px solid var(--bd)}
+.tc-stat:last-child{border:0}
+.tc-stat u{display:block;text-decoration:none;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--mu)}
+.tc-stat b{display:block;font-size:19px;font-weight:700;margin-top:3px;letter-spacing:-.02em}
+.tc-stat b em{font-style:normal;font-size:10px;color:var(--ac)}
+.tc-tools{display:flex;gap:0;border-bottom:1px solid var(--bd);font-size:10.5px;overflow:hidden}
+.tc-tools span{padding:8px 13px;color:var(--mu);border-right:1px solid var(--bd);letter-spacing:.06em;text-transform:uppercase;cursor:default;white-space:nowrap}
+.tc-tools span.on{background:var(--ac-soft);color:var(--ac)}
+.tc-row{display:flex;align-items:center;gap:11px;padding:9px 14px;border-bottom:1px solid var(--bd);cursor:default}
+.tc-row:hover{background:var(--sf)}
+.tc-th{width:26px;height:36px;flex-shrink:0;background:var(--sf);overflow:hidden}
+.tc-row .tx{flex:1;min-width:0}
+.tc-row .tx b{display:block;font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-row .tx i{display:block;font-style:normal;font-size:9.5px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-row .md{font-size:9.5px;color:var(--mu);width:56px;flex-shrink:0}
+.tc-row .bar{width:52px;height:5px;background:var(--sf);border:1px solid var(--bd);flex-shrink:0;position:relative}
+.tc-row .bar em{position:absolute;inset:0 auto 0 0;background:var(--ac)}
+.tc-row .sc{font-size:11px;font-weight:700;width:32px;text-align:right;flex-shrink:0}
+.tc-hdrow{display:flex;gap:11px;padding:6px 14px;border-bottom:1px solid var(--bd);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--mu)}
+.tc-hdrow span:nth-child(2){flex:1}
+
+/* ================================================================
+   DESIGN 3 — BUBBLE : bottom nav, chunky rounded, playful, mobile-first
+   ================================================================ */
+[data-design="bubble"]{
+  --bg:#fdf7fb;--bg2:#fff;--sf:#fff;--bd:rgba(190,80,120,.16);--bd2:rgba(190,80,120,.34);
+  --tx:#2b1a22;--mu:#8a6b76;--ac:#e11d74;--aci:#fff;--ac2:#8b5cf6;--ac-soft:rgba(225,29,116,.1);
+  --r:22px;--sh:0 10px 26px -14px rgba(150,40,80,.4);--sf:inherit;
+}
+[data-design="bubble"][data-mode="light"]{
+  --bg:#160e13;--bg2:#20141b;--sf:#271820;--bd:rgba(251,113,133,.2);--bd2:rgba(251,113,133,.42);
+  --tx:#fdf1f4;--mu:#b2959f;--ac:#fb7185;--aci:#2a0d15;--ac2:#c084fc;--ac-soft:rgba(251,113,133,.14);
+}
+.bb{display:flex;flex-direction:column;min-height:100%}
+.bb-top{display:flex;align-items:center;gap:10px;padding:16px 18px 10px}
+.bb-top .lg{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.bb-ava{margin-left:auto;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800}
+.bb-search{margin:0 18px 14px;padding:10px 16px;border-radius:99px;background:var(--sf);border:1px solid var(--bd);color:var(--mu);font-size:12px}
+.bb-blob{margin:0 18px 16px;padding:20px;border-radius:26px;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;position:relative;overflow:hidden;box-shadow:var(--sh)}
+.bb-blob h2{margin:0;font-size:23px;font-weight:800;letter-spacing:-.025em;line-height:1.1}
+.bb-blob p{margin:7px 0 14px;font-size:11.5px;opacity:.92;line-height:1.55;max-width:30ch}
+.bb-blob .go{display:inline-block;padding:8px 18px;border-radius:99px;background:#fff;color:var(--ac);font-size:11.5px;font-weight:800}
+.bb-story{display:flex;gap:13px;padding:0 18px 18px;overflow:hidden}
+.bb-story .st{flex:0 0 58px;text-align:center}
+.bb-story .av{width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid var(--ac);margin:0 auto 5px;background:var(--sf)}
+.bb-story .av img{border-radius:50%}
+.bb-story span{display:block;font-size:9.5px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bb-h{padding:0 18px 10px;display:flex;align-items:center;gap:8px}
+.bb-h b{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.bb-h i{margin-left:auto;font-style:normal;font-size:10.5px;color:var(--ac);font-weight:700}
+.bb-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 18px 18px}
+.bb-grid:last-of-type{padding-bottom:64px}
+.bb-card{background:var(--sf);border:1px solid var(--bd);border-radius:20px;overflow:hidden;box-shadow:var(--sh);transition:transform .2s}
+.bb-card:hover{transform:translateY(-3px)}
+.bb-card .ph{aspect-ratio:3/4;overflow:hidden;background:var(--bg2)}
+.bb-card .cap{padding:9px 11px 11px}
+.bb-card b{display:block;font-size:12px;font-weight:700;line-height:1.25;letter-spacing:-.01em}
+.bb-card .mt{display:flex;justify-content:space-between;align-items:center;margin-top:5px}
+.bb-card .mt span{font-size:9.5px;color:var(--mu)}
+.bb-card .mt u{text-decoration:none;font-size:9.5px;font-weight:800;color:var(--ac);background:var(--ac-soft);padding:2px 6px;border-radius:99px}
+.bb-nav{margin-top:auto;display:flex;justify-content:space-around;padding:9px 8px;border-top:1px solid var(--bd);background:var(--bg2)}
+.bb-nav a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9px;color:var(--mu);font-weight:600}
+.bb-nav a.on{color:var(--ac)}
+.bb-nav a .g{font-size:16px;line-height:1}
+
+/* ================================================================
+   DESIGN 4 — BENTO : magazine mosaic, mixed tile sizes, full-bleed
+   ================================================================ */
+[data-design="bento"]{
+  --bg:#0a0a0c;--bg2:#101013;--sf:#16161a;--bd:rgba(255,255,255,.09);--bd2:rgba(255,255,255,.2);
+  --tx:#f4f4f6;--mu:#8f8f9a;--ac:#6ee7b7;--ac2:#60a5fa;--aci:#04231a;--ac-soft:rgba(110,231,183,.13);
+  --r:16px;--sh:none;--sf:inherit;
+}
+[data-design="bento"][data-mode="light"]{
+  --bg:#fcfcfd;--bg2:#f4f4f6;--sf:#fff;--bd:rgba(20,20,30,.1);--bd2:rgba(20,20,30,.22);
+  --tx:#0c0c10;--mu:#63636e;--ac:#047857;--ac2:#1d4ed8;--aci:#fff;--ac-soft:rgba(4,120,87,.1);
+}
+.be-nav{display:flex;align-items:center;gap:11px;padding:15px 18px}
+.be-nav .lg{font-size:18px;font-weight:800;letter-spacing:-.03em}
+.be-nav .lg em{font-style:normal;color:var(--ac)}
+.be-nav .sc{flex:1;max-width:190px;margin-left:auto;padding:7px 13px;border-radius:10px;background:var(--sf);border:1px solid var(--bd);color:var(--mu);font-size:11.5px}
+.be-sec{padding:20px 18px 9px;display:flex;align-items:baseline;gap:9px}
+.be-sec u{text-decoration:none;font-size:10px;font-weight:800;color:var(--ac);letter-spacing:.1em}
+.be-sec b{font-size:13px;font-weight:700;letter-spacing:-.01em}
+.be-grid{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:104px;gap:9px;padding:0 18px 18px}
+.be-t{border-radius:var(--r);overflow:hidden;background:var(--sf);border:1px solid var(--bd);position:relative;transition:transform .2s}
+.be-t:hover{transform:scale(1.015)}
+.be-t img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.be-t .ov{position:absolute;inset:0;background:linear-gradient(transparent 35%,rgba(0,0,0,.9));padding:10px;display:flex;flex-direction:column;justify-content:flex-end}
+.be-t .ov b{font-size:12px;font-weight:700;color:#fff;line-height:1.2;letter-spacing:-.01em}
+.be-t .ov i{font-style:normal;font-size:9.5px;color:rgba(255,255,255,.7);margin-top:2px}
+.be-t.w2{grid-column:span 2}
+.be-t.h2{grid-row:span 2}
+.be-t.h3{grid-row:span 3}
+.be-t.plain{padding:13px;display:flex;flex-direction:column;justify-content:center;gap:3px}
+.be-t.plain u{text-decoration:none;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--mu)}
+.be-t.plain b{font-size:24px;font-weight:800;letter-spacing:-.03em;color:var(--ac);line-height:1}
+.be-t.plain i{font-style:normal;font-size:10px;color:var(--mu);margin-top:3px}
+.be-t.solid{background:var(--ac);border-color:transparent;padding:13px;display:flex;flex-direction:column;justify-content:center}
+.be-t.solid u{text-decoration:none;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.75)}
+.be-t.solid b{font-size:19px;font-weight:800;color:var(--aci);letter-spacing:-.02em;margin-top:3px;line-height:1.1}
+/* ================================================================
+   DESIGN 5 — VITRINE : the hybrid
+   Cinema typography (serif display, underlined tabs, bare poster shelf)
+   + Tactical architecture (left rail, ticker, dense index table)
+   + legacy material (glass, indigo->pink brand gradient)
+   Signature: gradient hairline edge on every glass panel.
+   ================================================================ */
+[data-design="vitrine"]{
+  --bg:#0a0a10;--bg2:#0e0e16;--sf:#14141d;
+  --glass:rgba(255,255,255,.045);--glass-2:rgba(255,255,255,.075);
+  --bd:rgba(255,255,255,.1);--bd2:rgba(255,255,255,.2);
+  --tx:#f4f4f7;--mu:#9090a2;--dim:#63636f;
+  --ac1:#818cf8;--ac2:#f472b6;--aci:#0a0a12;--ac-soft:rgba(129,140,248,.14);
+  --serif:Georgia,"Times New Roman",serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --r:16px;--sh:0 20px 50px -24px rgba(0,0,0,.9);
+}
+[data-design="vitrine"][data-mode="light"]{
+  --bg:#f6f6fa;--bg2:#eeeef5;--sf:#fff;
+  --glass:rgba(255,255,255,.66);--glass-2:rgba(255,255,255,.86);
+  --bd:rgba(18,18,32,.12);--bd2:rgba(18,18,32,.24);
+  --tx:#12121a;--mu:#5e5e72;--dim:#8b8b9c;
+  --ac1:#4f46e5;--ac2:#db2777;--aci:#fff;--ac-soft:rgba(79,70,229,.12);
+  --sh:0 16px 40px -22px rgba(40,40,80,.35);
+}
+.canvas{background:var(--bg);color:var(--tx);min-height:100%}
+.vr{display:grid;grid-template-columns:54px 1fr;min-height:100%}
+.vr>div{min-width:0}
+/* gradient-hairline glass — the signature */
+.vr-gl{position:relative;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:var(--r);border:1px solid var(--bd)}
+.vr-gl::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(135deg,var(--ac1),transparent 45%,transparent 55%,var(--ac2));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:.65}
+
+.vr-rail{border-right:1px solid var(--bd);background:var(--bg2);display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 0}
+.vr-rail .mk{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--ac1),var(--ac2));color:#fff;display:grid;place-items:center;font-size:11px;font-weight:800;margin-bottom:14px;letter-spacing:-.03em}
+.vr-rail button{width:36px;height:34px;display:grid;place-items:center;border-radius:9px;font-size:15px;color:var(--mu);position:relative;transition:.18s}
+.vr-rail button:hover{background:var(--glass-2);color:var(--tx)}
+.vr-rail button.on{background:var(--ac-soft);color:var(--ac1)}
+.vr-rail button.on::before{content:"";position:absolute;left:-9px;top:50%;transform:translateY(-50%);width:3px;height:16px;border-radius:2px;background:linear-gradient(180deg,var(--ac1),var(--ac2))}
+.vr-rail .sp{margin-top:auto}
+
+.vr-top{display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--bd);background:var(--bg2)}
+.vr-top .lg{font-family:var(--serif);font-size:18px;letter-spacing:-.02em}
+.vr-top .lg em{font-style:normal;background:linear-gradient(90deg,var(--ac1),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.vr-top .sc{flex:1;max-width:260px;margin-left:auto;padding:7px 13px;border-radius:9px;background:var(--glass);border:1px solid var(--bd);color:var(--mu);font-size:11.5px}
+.vr-top .ic{width:30px;height:30px;border-radius:9px;background:var(--glass);border:1px solid var(--bd);display:grid;place-items:center;font-size:13px;color:var(--mu)}
+
+.vr-tick{display:flex;align-items:center;gap:16px;padding:9px 22px;border-bottom:1px solid var(--bd);font-family:var(--mono);font-size:10.5px;color:var(--mu);letter-spacing:.04em;overflow:hidden;white-space:nowrap}
+.vr-tick .live{display:inline-flex;align-items:center;gap:6px;color:var(--tx);font-weight:600}
+.vr-tick .live i{width:6px;height:6px;border-radius:50%;background:var(--ac2);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac2) 22%,transparent)}
+.vr-tick em{font-style:normal;color:var(--tx);font-weight:700}
+.vr-tick .sep{color:var(--bd2)}
+
+.vr-hero{display:grid;grid-template-columns:1.45fr 1fr;gap:16px;padding:20px 22px 6px;align-items:stretch}
+.vr-hero>div{min-width:0}
+.vr-hero .copy{padding:26px 24px;display:flex;flex-direction:column;justify-content:center}
+.vr-hero h1{margin:0;font-family:var(--serif);font-size:clamp(24px,3.2vw,38px);line-height:1.04;font-weight:400;letter-spacing:-.03em}
+.vr-hero h1 em{font-style:italic;background:linear-gradient(90deg,var(--ac1),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.vr-hero p{margin:12px 0 0;color:var(--mu);font-size:12.5px;line-height:1.65;max-width:36ch}
+.vr-hero .cta{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+.vr-hero .cta i{font-style:normal;padding:9px 18px;border-radius:10px;font-size:11.5px;font-weight:700}
+.vr-hero .cta .p{background:linear-gradient(135deg,var(--ac1),var(--ac2));color:#fff;box-shadow:0 8px 22px -10px var(--ac1)}
+.vr-hero .cta .s{background:var(--glass);border:1px solid var(--bd);color:var(--tx)}
+.vr-feat{position:relative;overflow:hidden;min-height:210px}
+.vr-feat img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vr-feat .lb{position:absolute;inset:auto 0 0 0;padding:13px;background:linear-gradient(transparent,rgba(0,0,0,.92));color:#fff}
+.vr-feat .lb u{text-decoration:none;display:block;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+.vr-feat .lb b{display:block;font-size:13px;font-weight:600;margin-top:3px}
+
+.vr-tabs{display:flex;gap:20px;padding:22px 22px 0;align-items:baseline}
+.vr-tabs span{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mu);padding-bottom:9px;border-bottom:1px solid transparent}
+.vr-tabs span.on{color:var(--tx);border-color:var(--ac2)}
+.vr-tabs i{margin-left:auto;font-style:normal;font-family:var(--mono);font-size:10px;color:var(--dim)}
+
+.vr-shelf{display:flex;gap:13px;padding:16px 22px 4px;overflow:hidden}
+.vr-shelf .it{flex:0 0 clamp(96px,11vw,128px)}
+.vr-shelf .ph{aspect-ratio:2/3;border-radius:10px;overflow:hidden;background:var(--sf);border:1px solid var(--bd)}
+.vr-shelf .ph img{transition:transform .5s}
+.vr-shelf .it:hover .ph img{transform:scale(1.07)}
+.vr-shelf b{display:block;margin-top:8px;font-size:11.5px;font-weight:600;line-height:1.3;letter-spacing:-.01em}
+.vr-shelf i{display:block;font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:3px}
+
+.vr-idx{margin:20px 22px 22px;overflow:hidden}
+.vr-idx .hd{display:flex;gap:12px;padding:9px 16px;border-bottom:1px solid var(--bd);font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.vr-idx .hd span:nth-child(2){flex:1}
+.vr-row{display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:1px solid var(--bd)}
+.vr-row:last-child{border:0}
+.vr-row:hover{background:var(--glass)}
+.vr-row .rk{font-family:var(--mono);font-size:10px;color:var(--dim);width:20px;flex-shrink:0}
+.vr-row .th{width:26px;height:36px;border-radius:6px;overflow:hidden;background:var(--sf);flex-shrink:0}
+.vr-row .tx{flex:1;min-width:0}
+.vr-row .tx b{display:block;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.vr-row .tx i{display:block;font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.vr-row .md{font-family:var(--mono);font-size:10px;color:var(--mu);width:44px;flex-shrink:0}
+.vr-row .bar{width:64px;height:5px;border-radius:3px;background:var(--sf);border:1px solid var(--bd);flex-shrink:0;overflow:hidden}
+.vr-row .bar em{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--ac1),var(--ac2))}
+.vr-row .sc{font-family:var(--mono);font-size:11px;font-weight:700;width:30px;text-align:right;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="lab-bar">
+  <h1>AnimeFinder <span>/ design lab</span></h1>
+  <div class="seg" id="design-seg" role="group" aria-label="Design"></div>
+  <div class="bar-right">
+    <div class="seg">
+      <button id="prev" title="Previous design (←)">‹</button>
+      <button id="next" title="Next design (→)">›</button>
+    </div>
+    <div class="seg" id="mode-seg" role="group" aria-label="Mode">
+      <button data-mode="dark" aria-pressed="true">Dark</button>
+      <button data-mode="light" aria-pressed="false">Light</button>
+    </div>
+    <div class="seg"><button id="compare" aria-pressed="false">Compare all</button></div>
+  </div>
+</div>
+
+<div id="wrap"></div>
+
+<script>
+const DESIGNS = [
+  { id:'vitrine',  name:'Vitrine',   max:1240, blurb:'THE HYBRID — Cinema typography + Tactical console architecture + the original glass material. Vertical rail, live ticker, serif spread, bare poster shelf, dense index. Signature: gradient hairline edge on every glass panel.' },
+  { id:'cinema',   name:'Cinema',   max:1120, blurb:'Poster-first editorial. No card chrome — bare posters on a rail, serif display type, underlined tabs. Reads like a film archive.' },
+  { id:'tactical', name:'Tactical', max:1120, blurb:'Information console. Left icon rail, KPI tiles, dense data rows with score bars. Mono throughout, 0px radius, no imagery beyond thumbnails.' },
+  { id:'bubble',   name:'Bubble',   max:430,  blurb:'Mobile-first playful app. Bottom tab bar, gradient hero blob, circular story rail, chunky 20px-radius cards. Built for thumb reach — shown at phone width.' },
+  { id:'bento',    name:'Bento',    max:900,  blurb:'Magazine mosaic. Mixed tile sizes — one hero tile beside two stacked ones, plus stat blocks. Rewards scanning, adapts to any count.' },
+];
+
+const state = { mode:'dark', compare:false, i:0, anime:[], chars:[] };
+
+async function load(){
+  const q = { query:`{
+    Page(page:1, perPage:10){ media(type:ANIME, sort:POPULARITY_DESC){
+      id title{english romaji} coverImage{large} averageScore seasonYear format genres } }
+    Media(id:21){ characters(perPage:8, sort:RELEVANCE){ edges{ node{ id name{full} image{large} } } } }
+  }`};
+  try{
+    const r = await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(q)});
+    const j = await r.json();
+    state.anime = j.data.Page.media;
+    state.chars = j.data.Media.characters.edges.map(e=>e.node);
+  }catch(e){ console.warn(e); }
+}
+
+const T = (a,i)=> a[i] || { title:{english:'—',romaji:'—'}, coverImage:{large:''}, averageScore:0, seasonYear:'—', format:'TV', genres:[] };
+const nm  = a => a.title.english || a.title.romaji;
+const pct = a => a.averageScore ? Math.round(a.averageScore) : 0;
+
+/* ---------- 1. CINEMA ---------- */
+function cinema(){
+  const f = T(state.anime,0);
+  const rail = [0,1,2,3,4].map(i=>T(state.anime,i)).map(a=>`
+    <div class="ci-card"><div class="ph"><img class="poster" src="${a.coverImage.large}" alt="" loading="lazy"></div>
+    <b>${nm(a)}</b><i>${a.seasonYear} · ${a.format}</i></div>`).join('');
+  return `
+  <div class="canvas">
+    <div class="ci-nav">
+      <span class="lg">AnimeFinder</span>
+      <span class="lk on">Discover</span><span class="lk">Browse</span><span class="lk">Schedule</span>
+      <span class="sp"><span class="lk">Quiz</span><span class="lk" style="color:var(--ac)">Lucky</span></span>
+    </div>
+    <div class="ci-hero">
+      <div>
+        <h1>Find something<br>worth <em>staying up for.</em></h1>
+        <p>A considered catalogue rather than an infinite feed. Curated, ranked, and quiet.</p>
+        <span class="go">Begin</span>
+      </div>
+      <div class="ci-feat">
+        <img class="poster" src="${f.coverImage.large}" alt="" loading="lazy">
+        <div class="lb"><b>${nm(f)}</b><i>Featured · ${pct(f)}%</i></div>
+      </div>
+    </div>
+    <div class="ci-tabs"><span class="on">Trending</span><span>Top Rated</span><span>Upcoming</span><span>Seasonal</span></div>
+    <div class="ci-sec" style="margin-top:18px"><b>Trending This Week</b><i>Updated daily</i></div>
+    <div class="ci-rail">${rail}</div>
+    <div class="ci-sec"><b>Acclaimed</b><i>85%+</i></div>
+    <div class="ci-rail">${[5,6,7,8,9].map(i=>{const a=T(state.anime,i);return `
+      <div class="ci-card"><div class="ph"><img class="poster" src="${a.coverImage.large}" alt="" loading="lazy"></div>
+      <b>${nm(a)}</b><i>${a.seasonYear} · ${a.format}</i></div>`}).join('')}</div>
+  </div>`;
+}
+
+/* ---------- 2. TACTICAL ---------- */
+function tactical(){
+  const rows = state.anime.slice(0,7).map((a,i)=>`
+    <div class="tc-row">
+      <div class="tc-th"><img class="poster" src="${a.coverImage.large}" alt="" loading="lazy"></div>
+      <div class="tx"><b>${nm(a)}</b><i>${(a.genres||[]).slice(0,2).join(' · ').toUpperCase()}</i></div>
+      <div class="md">${a.seasonYear}</div>
+      <div class="bar"><em style="width:${pct(a)}%"></em></div>
+      <div class="sc">${pct(a)}</div>
+    </div>`).join('');
+  return `
+  <div class="canvas">
+    <div class="tc">
+      <div class="tc-rail">
+        <div class="mk">AF</div>
+        <button class="on">◈</button><button>▤</button><button>◷</button><button>★</button><button>⚙</button>
+        <button class="sp">?</button>
+      </div>
+      <div class="tc-main">
+        <div class="tc-top"><span class="t">LIBRARY_OVERVIEW</span><span class="w">▸ search catalogue…</span></div>
+        <div class="tc-stats">
+          <div class="tc-stat"><u>Titles indexed</u><b>18,420</b></div>
+          <div class="tc-stat"><u>Airing now</u><b>312 <em>+24</em></b></div>
+          <div class="tc-stat"><u>Mean score</u><b>74.8 <em>▲1.2</em></b></div>
+        </div>
+        <div class="tc-tools"><span class="on">All</span><span>Action</span><span>Fantasy</span><span>Comedy</span><span>Drama</span></div>
+        <div class="tc-hdrow"><span style="width:26px"></span><span>Title / Genre</span><span style="width:56px">Year</span><span style="width:52px">Score</span><span style="width:32px;text-align:right">Mean</span></div>
+        ${rows}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- 3. BUBBLE ---------- */
+function bubble(){
+  const cards = [0,1,2,3].map(i=>{const a=T(state.anime,i);return `
+    <article class="bb-card">
+      <div class="ph"><img class="poster" src="${a.coverImage.large}" alt="" loading="lazy"></div>
+      <div class="cap"><b>${nm(a)}</b>
+        <div class="mt"><span>${a.seasonYear} · ${a.format}</span><u>${pct(a)}</u></div></div>
+    </article>`}).join('');
+  const stories = state.chars.slice(0,7).map(c=>`
+    <div class="st"><div class="av"><img class="poster" src="${c.image.large}" alt="" loading="lazy"></div><span>${c.name.full.split(' ').pop()}</span></div>`).join('');
+  return `
+  <div class="canvas">
+    <div class="bb">
+      <div class="bb-top"><span class="lg">AnimeFinder ✦</span><span class="bb-ava">AK</span></div>
+      <div class="bb-search">🔍 Search anime, genres…</div>
+      <div class="bb-blob">
+        <h2>Not sure what<br>to watch?</h2>
+        <p>Take the 30-second quiz and we'll find your next obsession.</p>
+        <span class="go">Start Quiz →</span>
+      </div>
+      <div class="bb-story">${stories}</div>
+      <div class="bb-h"><b>Popular Now</b><i>See all</i></div>
+      <div class="bb-grid">${cards}</div>
+      <div class="bb-h"><b>Because you liked it</b></div>
+      <div class="bb-grid">${[4,5].map(i=>{const a=T(state.anime,i);return `
+        <article class="bb-card"><div class="ph"><img class="poster" src="${a.coverImage.large}" alt="" loading="lazy"></div>
+        <div class="cap"><b>${nm(a)}</b><div class="mt"><span>${a.seasonYear}</span><u>${pct(a)}</u></div></div></article>`}).join('')}</div>
+      <nav class="bb-nav">
+        <a class="on"><span class="g">◎</span>Home</a><a><span class="g">▤</span>Browse</a>
+        <a><span class="g">◷</span>Schedule</a><a><span class="g">☻</span>Quiz</a>
+      </nav>
+    </div>
+  </div>`;
+}
+
+/* ---------- 4. BENTO ---------- */
+function bento(){
+  const a = i => T(state.anime,i);
+  const tile = (x, cls, extra='') => `<div class="be-t ${cls}">
+    <img class="poster" src="${x.coverImage.large}" alt="" loading="lazy">
+    <div class="ov"><b>${nm(x)}</b><i>${x.seasonYear} · ${x.format}</i></div></div>`;
+  return `
+  <div class="canvas">
+    <nav class="be-nav"><span class="lg">Anime<em>Finder</em></span><span class="sc">Search…</span></nav>
+    <div class="be-sec"><u>01</u><b>Featured this week</b></div>
+    <div class="be-grid">
+      ${tile(a(0),'w2 h2')}
+      <div class="be-t plain h2"><u>Catalogue</u><b>18,420</b><i>titles indexed</i></div>
+      ${tile(a(1),'')}
+      <div class="be-t solid"><u>Top pick</u><b>${nm(a(0)).split(' ')[0]}</b></div>
+    </div>
+    <div class="be-sec"><u>02</u><b>Trending now</b></div>
+    <div class="be-grid">
+      ${tile(a(2),'h2')}
+      <div class="be-t plain"><u>Airing</u><b>312</b><i>this week</i></div>
+      ${tile(a(3),'')}
+      ${tile(a(4),'')}
+      <div class="be-t plain"><u>Mean score</u><b>74.8</b></div>
+      ${tile(a(5),'w2')}
+    </div>
+  </div>`;
+}
+
+/* ---------- 5. VITRINE — the hybrid ---------- */
+function vitrine(){
+  const f = T(state.anime,0);
+  const shelf = (i) => { const a=T(state.anime,i); return `
+    <div class="it"><div class="ph"><img class="poster" src="${a.coverImage.large}" alt="" loading="lazy"></div>
+    <b>${nm(a)}</b><i>${a.seasonYear} · ${a.format}</i></div>`; };
+  const rows = state.anime.slice(0,6).map((a,i)=>`
+    <div class="vr-row">
+      <span class="rk">${String(i+1).padStart(2,'0')}</span>
+      <span class="th"><img class="poster" src="${a.coverImage.large}" alt="" loading="lazy"></span>
+      <span class="tx"><b>${nm(a)}</b><i>${(a.genres||[]).slice(0,3).join(' · ').toUpperCase()}</i></span>
+      <span class="md">${a.seasonYear}</span>
+      <span class="bar"><em style="width:${pct(a)}%"></em></span>
+      <span class="sc">${pct(a)}</span>
+    </div>`).join('');
+  return `
+  <div class="vr">
+    <nav class="vr-rail">
+      <div class="mk">AF</div>
+      <button class="on" title="Home">◈</button>
+      <button title="Browse">▤</button>
+      <button title="Schedule">◷</button>
+      <button title="Quiz">✦</button>
+      <button title="Random">⤮</button>
+      <button class="sp" title="Settings">⚙</button>
+    </nav>
+
+    <div>
+      <div class="vr-top">
+        <span class="lg">Anime<em>Finder</em></span>
+        <span class="sc">Search titles, genres…</span>
+        <span class="ic">◐</span>
+      </div>
+
+      <div class="vr-tick">
+        <span class="live"><i></i> LIVE</span>
+        <span><em>312</em> airing today</span><span class="sep">│</span>
+        <span><em>18,420</em> titles indexed</span><span class="sep">│</span>
+        <span>mean score <em>74.8</em></span><span class="sep">│</span>
+        <span>next drop in <em>04:12:38</em></span>
+      </div>
+
+      <div class="vr-hero">
+        <div class="vr-gl copy">
+          <h1>Find something worth <em>staying up for.</em></h1>
+          <p>A considered catalogue rather than an infinite feed. Ranked, scored, and quiet enough to browse.</p>
+          <div class="cta"><i class="p">Take the Quiz</i><i class="s">Browse Index</i></div>
+        </div>
+        <div class="vr-gl vr-feat">
+          <img class="poster" src="${f.coverImage.large}" alt="" loading="lazy">
+          <div class="lb"><u>Featured</u><b>${nm(f)}</b></div>
+        </div>
+      </div>
+
+      <div class="vr-tabs"><span class="on">Trending</span><span>Top Rated</span><span>Upcoming</span><span>Seasonal</span><i>Updated 4m ago</i></div>
+      <div class="vr-shelf">${[0,1,2,3,4,5].map(shelf).join('')}</div>
+
+      <div class="vr-tabs" style="padding-top:20px"><span class="on">Index</span><span>By score</span><span>By year</span><span>By popularity</span><i>1–6 of 18,420</i></div>
+      <div class="vr-gl vr-idx">
+        <div class="hd"><span>#</span><span>Title / Genre</span><span style="width:44px">Year</span><span style="width:64px">Score</span><span style="width:30px;text-align:right">Mean</span></div>
+        ${rows}
+      </div>
+    </div>
+  </div>`;
+}
+
+const RENDER = { cinema, tactical, bubble, bento, vitrine };
+
+function shell(d){
+  return `
+    <section class="spec" data-design="${d.id}" data-mode="${state.mode}" ${state.compare ? '' : `style="max-width:${d.max}px"`}>
+      <div class="spec-hd"><b>${d.name}</b><span class="tag">${state.mode}</span></div>
+      <div class="stage">${RENDER[d.id]()}</div>
+      <p class="blurb">${d.blurb}</p>
+    </section>`;
+}
+
+function render(){
+  document.documentElement.dataset.mode = state.mode;
+  const wrap = document.getElementById('wrap');
+  if(state.compare){
+    wrap.className = 'lab-grid';
+    wrap.innerHTML = DESIGNS.map(shell).join('');
+  } else {
+    wrap.className = '';
+    wrap.innerHTML = shell(DESIGNS[state.i]);
+  }
+  document.querySelectorAll('#mode-seg button').forEach(b=>
+    b.setAttribute('aria-pressed', String(b.dataset.mode===state.mode)));
+  document.querySelectorAll('#design-seg button').forEach(b=>
+    b.setAttribute('aria-pressed', String(!state.compare && DESIGNS[state.i].id===b.dataset.design)));
+  document.getElementById('compare').setAttribute('aria-pressed', String(state.compare));
+}
+
+function select(i){
+  state.i = (i + DESIGNS.length) % DESIGNS.length;
+  state.compare = false;
+  render();
+  scrollTo({ top:0, behavior:'smooth' });
+}
+
+document.getElementById('design-seg').innerHTML =
+  DESIGNS.map(d=>`<button data-design="${d.id}" aria-pressed="false">${d.name}</button>`).join('');
+
+document.getElementById('design-seg').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  select(DESIGNS.findIndex(d=>d.id===b.dataset.design));
+});
+
+document.getElementById('mode-seg').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  state.mode=b.dataset.mode; render();
+});
+
+document.getElementById('compare').addEventListener('click', ()=>{
+  state.compare = !state.compare; render();
+});
+
+document.getElementById('prev').addEventListener('click', ()=>select(state.i-1));
+document.getElementById('next').addEventListener('click', ()=>select(state.i+1));
+
+addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') select(state.i+1);
+  else if(e.key==='ArrowLeft') select(state.i-1);
+});
+
+(async function(){ render(); await load(); render(); })();
+</script>
+</body>
+</html>

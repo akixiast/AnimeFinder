@@ -1143,11 +1143,14 @@ async function loadHome(){
   loadStats();
   const q = `query {
     Trending: Page(page:1, perPage:20){ media(type:ANIME, sort:TRENDING_DESC){
-      id title{english romaji} coverImage{large medium} averageScore seasonYear format genres } }
+      id title{english romaji} coverImage{extraLarge large medium} bannerImage
+      averageScore seasonYear format genres } }
     Acclaimed: Page(page:1, perPage:20){ media(type:ANIME, sort:SCORE_DESC){
-      id title{english romaji} coverImage{large medium} averageScore seasonYear format genres } }
+      id title{english romaji} coverImage{extraLarge large medium}
+      averageScore seasonYear format genres } }
     Upcoming: Page(page:1, perPage:20){ media(type:ANIME, sort:POPULARITY_DESC, status:NOT_YET_RELEASED){
-      id title{english romaji} coverImage{large medium} averageScore seasonYear format genres } }
+      id title{english romaji} coverImage{extraLarge large medium}
+      averageScore seasonYear format genres } }
   }`;
   const d = await anilist(q);
   const shelf = document.getElementById('home-shelf');
@@ -1161,8 +1164,11 @@ async function loadHome(){
 
   if (feat) {
     const f = d.Trending.media[0];
+    // bannerImage is the only genuinely high-res asset AniList offers (1900x400);
+    // the largest cover is 460x636, which is soft when stretched across the panel.
+    const hi = f?.bannerImage || f?.coverImage?.extraLarge || cover(f);
     feat.innerHTML = f
-      ? `<img src="${esc(cover(f))}" alt="${esc(title(f))}">
+      ? `<img src="${esc(hi)}" alt="${esc(title(f))}" fetchpriority="high">
          <div class="lb"><u>Featured</u><b>${esc(title(f))}</b></div>`
       : failHTML('No feature');
   }
@@ -1434,7 +1440,7 @@ async function openModal(id){
       averageScore popularity favourites genres format source siteUrl
       coverImage{extraLarge large} bannerImage
       studios{nodes{name}} trailer{id site}
-      relations{edges{relationType node{id title{english romaji} coverImage{medium} format}}}
+      relations{edges{relationType node{id title{english romaji} coverImage{large medium} format}}}
       characters(perPage:8, sort:ROLE){edges{role node{id name{full} image{large}}}}
       recommendations(perPage:6, sort:RATING_DESC){nodes{mediaRecommendation{id title{english romaji} coverImage{large}}}}
     }
@@ -1495,7 +1501,7 @@ async function openModal(id){
         <h3>Franchise</h3>
         <div class="relrail">${rel.map(e=>`
           <figure onclick="openModal(${e.node.id})" tabindex="0" role="button" onkeydown="if(event.key==='Enter'){openModal(${e.node.id})}">
-            <div class="ph"><img src="${esc(e.node.coverImage?.medium||'')}" alt="">
+            <div class="ph"><img src="${esc(e.node.coverImage?.large||e.node.coverImage?.medium||'')}" alt="">
               <span class="rel">${esc(e.relationType.replace('_',' '))}</span></div>
             <figcaption class="lc2">${esc(title(e.node))}</figcaption>
           </figure>`).join('')}</div>

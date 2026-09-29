@@ -54,6 +54,24 @@
 }
 
 /* ============================================================
+   1b. THEMES
+   Accent pairs layered over the dark/light surface system, so every
+   theme works in both modes. Light variants are darkened to hold
+   contrast on light surfaces.
+   ============================================================ */
+[data-mode="dark"][data-theme="indigo"]{--ac1:#818cf8;--ac2:#f472b6;--acsoft:rgba(129,140,248,.15)}
+[data-mode="dark"][data-theme="ember"] {--ac1:#fb923c;--ac2:#f43f5e;--acsoft:rgba(251,146,60,.15)}
+[data-mode="dark"][data-theme="mint"]  {--ac1:#2dd4bf;--ac2:#a3e635;--acsoft:rgba(45,212,191,.14)}
+[data-mode="dark"][data-theme="violet"]{--ac1:#a78bfa;--ac2:#e879f9;--acsoft:rgba(167,139,250,.16)}
+[data-mode="dark"][data-theme="rose"]  {--ac1:#fb7185;--ac2:#fcd34d;--acsoft:rgba(251,113,133,.15)}
+
+[data-mode="light"][data-theme="indigo"]{--ac1:#4f46e5;--ac2:#be185d;--acsoft:rgba(79,70,229,.12)}
+[data-mode="light"][data-theme="ember"] {--ac1:#c2410c;--ac2:#b91c1c;--acsoft:rgba(194,65,12,.12)}
+[data-mode="light"][data-theme="mint"]  {--ac1:#0f766e;--ac2:#4d7c0f;--acsoft:rgba(15,118,110,.12)}
+[data-mode="light"][data-theme="violet"]{--ac1:#6d28d9;--ac2:#a21caf;--acsoft:rgba(109,40,217,.12)}
+[data-mode="light"][data-theme="rose"]  {--ac1:#be123c;--ac2:#a16207;--acsoft:rgba(190,18,60,.12)}
+
+/* ============================================================
    2. BASE
    ============================================================ */
 *,*::before,*::after{box-sizing:border-box}
@@ -164,6 +182,27 @@ img{display:block; max-width:100%}
 }
 .iconbtn:hover{color:var(--tx);border-color:var(--bd2)}
 
+/* theme picker */
+.themepick{position:relative}
+.thememenu{
+  position:absolute;top:calc(100% + 8px);right:0;z-index:60;min-width:172px;
+  padding:6px;box-shadow:var(--sh);
+}
+.thememenu[hidden]{display:none}
+.thememenu u{
+  display:block;padding:6px 9px 7px;font-family:var(--mono);font-size:9px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--dim);text-decoration:none;
+}
+.thememenu button{
+  display:flex;align-items:center;gap:9px;width:100%;padding:7px 9px;
+  border:0;border-radius:8px;background:transparent;color:var(--mu);
+  font-size:12.5px;font-weight:600;cursor:pointer;text-align:left;transition:.15s;
+}
+.thememenu button:hover{background:var(--glass2);color:var(--tx)}
+.thememenu button[aria-checked="true"]{color:var(--tx);background:var(--acsoft)}
+.thememenu button i{width:16px;height:16px;border-radius:5px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+.thememenu button[aria-checked="true"]::after{content:"✓";margin-left:auto;color:var(--ac1)}
+
 /* ticker */
 .ticker{
   display:flex;align-items:center;gap:16px;padding:9px 22px;
@@ -254,6 +293,17 @@ img{display:block; max-width:100%}
    6. SHELF — bare posters, no card chrome
    ============================================================ */
 .shelf{display:flex;gap:13px;overflow-x:auto;padding:14px 2px 6px;scroll-snap-type:x proximity}
+
+/* auto-scrolling shelf: the item list is duplicated into two halves and the
+   track slides exactly one half-width, so the loop is seamless and every
+   item gets shown. Pauses on hover. */
+.shelf.auto{overflow:hidden;padding:14px 0 6px;scroll-snap-type:none}
+.shelf.auto .track{display:flex;width:max-content;animation:afslide var(--dur,48s) linear infinite;will-change:transform}
+.shelf.auto[data-dir="-1"] .track{animation-direction:reverse}
+.shelf.auto .track:hover{animation-play-state:paused}
+.shelf.auto .half{display:flex;gap:13px;padding:0 6.5px} /* half-gap each side keeps the seam even */
+@keyframes afslide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.shelf.auto .track{animation:none}}
 .sitem{flex:0 0 clamp(96px,13vw,132px);scroll-snap-align:start;cursor:pointer}
 .sitem .ph{
   aspect-ratio:2/3;border-radius:10px;overflow:hidden;background:var(--sf2);
@@ -556,7 +606,11 @@ input.num:focus{outline:0;border-color:var(--ac1);background:var(--glass2)}
         <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M14 14l4 4"/></svg>
         <input id="global-search" type="search" placeholder="Search titles…" aria-label="Search anime" onkeydown="globalSearch(event)">
       </label>
-      <button class="iconbtn" id="theme-btn" onclick="toggleMode()" title="Toggle light / dark" aria-label="Toggle colour theme">◐</button>
+      <button class="iconbtn" onclick="toggleMode()" title="Toggle light / dark" aria-label="Toggle colour theme">◐</button>
+      <div class="themepick">
+        <button class="iconbtn" id="theme-btn" onclick="toggleThemes()" title="Themes" aria-label="Choose theme" aria-haspopup="true" aria-expanded="false">✦</button>
+        <div class="thememenu glass" id="thememenu" hidden role="menu" aria-label="Theme"></div>
+      </div>
     </header>
 
     <!-- ============ TICKER ============ -->
@@ -608,6 +662,7 @@ input.num:focus{outline:0;border-color:var(--ac1);background:var(--glass2)}
 const state = {
   page: 'home',
   mode: localStorage.getItem('af-mode') || 'dark',
+  theme: localStorage.getItem('af-theme') || 'indigo',
   total: null,
   schedule: { day: null },
   quiz: { step: 0, answers: [] },
@@ -619,6 +674,65 @@ const state = {
 /* ============================================================
    THEME
    ============================================================ */
+const THEMES = [
+  { id:'indigo', label:'Indigo' },
+  { id:'ember',  label:'Ember'  },
+  { id:'mint',   label:'Mint'   },
+  { id:'violet', label:'Violet' },
+  { id:'rose',   label:'Rose'   },
+];
+const SWATCH = {
+  indigo:'linear-gradient(135deg,#818cf8,#f472b6)',
+  ember: 'linear-gradient(135deg,#fb923c,#f43f5e)',
+  mint:  'linear-gradient(135deg,#2dd4bf,#a3e635)',
+  violet:'linear-gradient(135deg,#a78bfa,#e879f9)',
+  rose:  'linear-gradient(135deg,#fb7185,#fcd34d)',
+};
+
+function setTheme(id){
+  state.theme = THEMES.some(t => t.id === id) ? id : 'indigo';
+  document.documentElement.dataset.theme = state.theme;
+  localStorage.setItem('af-theme', state.theme);
+  document.getElementById('theme-btn').style.color = 'var(--ac1)';
+  renderThemeMenu();
+}
+function renderThemeMenu(){
+  const m = document.getElementById('thememenu');
+  if (!m) return;
+  m.innerHTML = `<u>Theme</u>` + THEMES.map(t => `
+    <button role="menuitemradio" data-t="${t.id}" aria-checked="${state.theme === t.id}">
+      <i style="background:${SWATCH[t.id]}"></i>${t.label}
+    </button>`).join('');
+}
+function toggleThemes(){
+  const m = document.getElementById('thememenu');
+  const open = m.hasAttribute('hidden');
+  m.toggleAttribute('hidden', !open);
+  document.getElementById('theme-btn').setAttribute('aria-expanded', String(open));
+  if (open) renderThemeMenu();
+}
+document.getElementById('thememenu').addEventListener('click', e => {
+  const b = e.target.closest('button[data-t]');
+  if (b) setTheme(b.dataset.t);
+});
+document.addEventListener('click', e => {
+  const m = document.getElementById('thememenu');
+  if (!m || m.hasAttribute('hidden')) return;
+  if (!m.contains(e.target) && !e.target.closest('.themepick')) {
+    m.setAttribute('hidden','');
+    document.getElementById('theme-btn').setAttribute('aria-expanded','false');
+  }
+});
+addEventListener('keydown', e => {
+  if (e.key === 'Escape'){
+    const m = document.getElementById('thememenu');
+    if (m && !m.hasAttribute('hidden')){
+      m.setAttribute('hidden','');
+      document.getElementById('theme-btn').setAttribute('aria-expanded','false');
+    }
+  }
+});
+
 function setMode(m){
   state.mode = m;
   document.documentElement.dataset.mode = m;
@@ -728,13 +842,21 @@ function indexTable(list, { ranks = true } = {}){
   </div>`;
 }
 
-function shelfSection(id, label, aside, list){
-  return `<section class="glass grad-br" style="padding:4px 0 12px">
+function shelfSection(id, label, aside, list, dir = 1){
+  // duplicated so the rail can loop while still showing every item
+  const items = list.map((a,i) => shelfItem(a,i)).join('');
+  const dur = Math.max(28, list.length * 3.5);
+  return `<section class="glass grad-br">
     <div class="shead" style="margin:14px 18px 0">
       <span class="tab" aria-selected="true">${esc(label)}</span>
       ${aside ? `<span class="aside">${esc(aside)}</span>` : ''}
     </div>
-    <div class="shelf" id="${esc(id)}">${list.map((a,i)=>shelfItem(a,i)).join('')}</div>
+    <div class="shelf auto" id="${esc(id)}" data-dir="${dir}" style="--dur:${dur}s">
+      <div class="track">
+        <div class="half">${items}</div>
+        <div class="half" aria-hidden="true">${items}</div>
+      </div>
+    </div>
   </section>`;
 }
 
@@ -977,11 +1099,11 @@ async function loadStats(){
 async function loadHome(){
   loadStats();
   const q = `query {
-    Trending: Page(page:1, perPage:12){ media(type:ANIME, sort:TRENDING_DESC){
+    Trending: Page(page:1, perPage:20){ media(type:ANIME, sort:TRENDING_DESC){
       id title{english romaji} coverImage{large medium} averageScore seasonYear format genres } }
-    Acclaimed: Page(page:1, perPage:12){ media(type:ANIME, sort:SCORE_DESC){
+    Acclaimed: Page(page:1, perPage:20){ media(type:ANIME, sort:SCORE_DESC){
       id title{english romaji} coverImage{large medium} averageScore seasonYear format genres } }
-    Upcoming: Page(page:1, perPage:12){ media(type:ANIME, sort:POPULARITY_DESC, status:NOT_YET_RELEASED){
+    Upcoming: Page(page:1, perPage:20){ media(type:ANIME, sort:POPULARITY_DESC, status:NOT_YET_RELEASED){
       id title{english romaji} coverImage{large medium} averageScore seasonYear format genres } }
   }`;
   const d = await anilist(q);
@@ -1003,9 +1125,9 @@ async function loadHome(){
   }
   if (shelf) {
     shelf.innerHTML =
-      shelfSection('sh-a', 'Trending now', 'Updated live', d.Trending.media) +
-      shelfSection('sh-b', 'Acclaimed',      '85%+',        d.Acclaimed.media) +
-      shelfSection('sh-c', 'Upcoming hype',  'Not yet aired',d.Upcoming.media);
+      shelfSection('sh-a', 'Trending now', 'Hover to pause', d.Trending.media, 1) +
+      shelfSection('sh-b', 'Acclaimed',      '85%+',            d.Acclaimed.media, -1) +
+      shelfSection('sh-c', 'Upcoming hype',  'Not yet aired',   d.Upcoming.media, 1);
   }
   if (index) index.innerHTML = indexTable(d.Acclaimed.media.slice(0,8));
   const aside = document.getElementById('idx-aside');
@@ -1453,6 +1575,8 @@ async function surpriseMe(){
    ============================================================ */
 document.getElementById('yr').textContent = new Date().getFullYear();
 setMode(state.mode);
+setTheme(state.theme);
+renderThemeMenu();
 navigate('home');
 </script>
 </body>
